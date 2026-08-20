@@ -61,7 +61,9 @@ pub fn exponential value: Float -> Float = floats.power value eValue
 pub fn tenPower value: Float -> Float = floats.power value 10.0
 
 fn lnCore value: Float -> Float = {
-  let y: Float = (value - 1.0) / (value + 1.0)
+  let numerator: Float = value - 1.0
+  let denominator: Float = value + 1.0
+  let y: Float = numerator / denominator
   let y2: Float = y * y
   let y3: Float = y * y2
   let y5: Float = y3 * y2
@@ -72,7 +74,8 @@ fn lnCore value: Float -> Float = {
   let y15: Float = y13 * y2
   let y17: Float = y15 * y2
   let y19: Float = y17 * y2
-  2.0 * (y + y3 / 3.0 + y5 / 5.0 + y7 / 7.0 + y9 / 9.0 + y11 / 11.0 + y13 / 13.0 + y15 / 15.0 + y17 / 17.0 + y19 / 19.0)
+  let series: Float = y + y3 / 3.0 + y5 / 5.0 + y7 / 7.0 + y9 / 9.0 + y11 / 11.0 + y13 / 13.0 + y15 / 15.0 + y17 / 17.0 + y19 / 19.0
+  2.0 * series
 }
 
 fn naturalLogScaled value: Float -> offset: Float -> Float =
@@ -119,13 +122,15 @@ pub fn factorial value: Float -> Float =
 pub fn sinh value: Float -> Float = {
   let positive: Float = exponential value
   let negative: Float = exponential (0.0 - value)
-  (positive - negative) / 2.0
+  let difference: Float = positive - negative
+  difference / 2.0
 }
 
 pub fn cosh value: Float -> Float = {
   let positive: Float = exponential value
   let negative: Float = exponential (0.0 - value)
-  (positive + negative) / 2.0
+  let total: Float = positive + negative
+  total / 2.0
 }
 
 pub fn tanh value: Float -> Float = sinh value / cosh value
