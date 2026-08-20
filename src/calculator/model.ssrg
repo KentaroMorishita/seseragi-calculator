@@ -96,7 +96,7 @@ pub fn initialState -> CalculatorState =
     overlay: NoOverlay,
     angleUnit: Radians,
     phase: Editing,
-    display: Entry [],
+    display: Entry ["0"],
     caption: "",
     accumulator: NoAccumulator,
     pending: NoPendingOperator,
