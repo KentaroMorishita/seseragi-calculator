@@ -1,7 +1,6 @@
 import * as arrays from "std/array"
 import * as floats from "std/float"
 import * as ints from "std/int"
-import { Display, Entry, Value } from "./model"
 
 fn containsDecimal parts: Array<String> -> Bool =
   match arrays.find (\part: String -> part == ".") parts {
@@ -9,59 +8,37 @@ fn containsDecimal parts: Array<String> -> Bool =
     Just _ -> True
   }
 
-fn partsText parts: Array<String> -> String =
-  arrays.reduce "" (\text: String -> part: String -> text + part) parts
+pub fn text parts: Array<String> -> String =
+  arrays.reduce "" (\current: String -> part: String -> current + part) parts
 
-pub fn displayText display: Display -> String =
-  match display {
-    Entry parts -> partsText parts
-    Value value -> floats.format value
+pub fn value parts: Array<String> -> Float =
+  match floats.parse (text parts) {
+    Left _ -> 0.0
+    Right parsed -> parsed
   }
 
-pub fn displayValue display: Display -> Float =
-  match display {
-    Value value -> value
-    Entry parts ->
-      match floats.parse (partsText parts) {
-        Left _ -> 0.0
-        Right value -> value
-      }
-  }
+pub fn startDigit digit: Int -> Array<String> =
+  [ints.format digit]
 
-pub fn startDigit digit: Int -> Display =
-  Entry [ints.format digit]
+pub fn appendDigit digit: Int -> parts: Array<String> -> Array<String> =
+  if text parts == "0" then
+    startDigit digit
+  else if arrays.length parts >= 12 then
+    parts
+  else
+    arrays.append [ints.format digit] parts
 
-pub fn appendDigit digit: Int -> display: Display -> Display =
-  match display {
-    Value _ -> startDigit digit
-    Entry parts ->
-      if partsText parts == "0" then
-        Entry [ints.format digit]
-      else if arrays.length parts >= 12 then
-        display
-      else
-        Entry (arrays.append [ints.format digit] parts)
-  }
+pub fn startDecimal -> Array<String> =
+  ["0", "."]
 
-pub fn startDecimal -> Display =
-  Entry ["0", "."]
+pub fn appendDecimal parts: Array<String> -> Array<String> =
+  if containsDecimal parts then
+    parts
+  else
+    arrays.append ["."] parts
 
-pub fn appendDecimal display: Display -> Display =
-  match display {
-    Value _ -> startDecimal ()
-    Entry parts ->
-      if containsDecimal parts then
-        display
-      else
-        Entry (arrays.append ["."] parts)
-  }
-
-pub fn backspace display: Display -> Display =
-  match display {
-    Value _ -> Entry ["0"]
-    Entry parts ->
-      if arrays.length parts <= 1 then
-        Entry ["0"]
-      else
-        Entry (arrays.take (arrays.length parts - 1) parts)
-  }
+pub fn backspace parts: Array<String> -> Array<String> =
+  if arrays.length parts <= 1 then
+    ["0"]
+  else
+    arrays.take (arrays.length parts - 1) parts
