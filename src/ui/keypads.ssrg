@@ -1,45 +1,4 @@
 import * as html from "std/web/html"
-import {
-  Add,
-  AngleUnit,
-  ApplyUnary,
-  Backspace,
-  BinaryOperator,
-  CalculatorAction,
-  Clear,
-  Cosine,
-  Cosh,
-  Cube,
-  CubeRoot,
-  DecimalPoint,
-  Degrees,
-  Digit,
-  Divide,
-  Equals,
-  Euler,
-  Exponential,
-  Factorial,
-  Log10,
-  Multiply,
-  NaturalLog,
-  Percent,
-  Pi,
-  Power,
-  Radians,
-  Reciprocal,
-  SelectBinary,
-  Sine,
-  Sinh,
-  Square,
-  SquareRoot,
-  Subtract,
-  Tangent,
-  Tanh,
-  TenPower,
-  ToggleAngleUnit,
-  ToggleSign,
-  UnaryOperator,
-} from "../calculator/model"
 import * as components from "./components"
 import * as styles from "./styles"
 import {
@@ -49,81 +8,71 @@ import {
   UtilityKey,
 } from "./styles"
 
+pub alias BasicActions = {
+  digit: (Int -> Task<Unit>),
+  decimalPoint: Task<Unit>,
+  backspace: Task<Unit>,
+  clear: Task<Unit>,
+  percent: Task<Unit>,
+  divide: Task<Unit>,
+  multiply: Task<Unit>,
+  subtract: Task<Unit>,
+  add: Task<Unit>,
+  toggleSign: Task<Unit>,
+  equals: Task<Unit>,
+}
+
+pub alias ScientificButton = {
+  label: String,
+  action: Task<Unit>,
+}
+
 fn key label: String
   -> tone: KeyTone
   -> compact: Bool
-  -> action: CalculatorAction
-  -> send: (CalculatorAction -> Task<Unit>)
+  -> action: Task<Unit>
   -> html.Html<Task<Unit>> =
-  components.keyButton label tone compact (send action)
+  components.keyButton label tone compact action
 
 pub fn basicKeypad compact: Bool
-  -> send: (CalculatorAction -> Task<Unit>)
+  -> actions: BasicActions
   -> html.Html<Task<Unit>> =
   html.section {
     style: styles.basicGridStyle compact,
     children: [
-      key "⌫" UtilityKey compact Backspace send,
-      key "AC" UtilityKey compact Clear send,
-      key "%" UtilityKey compact Percent send,
-      key "÷" OperatorKey compact (SelectBinary Divide) send,
+      key "⌫" UtilityKey compact actions.backspace,
+      key "AC" UtilityKey compact actions.clear,
+      key "%" UtilityKey compact actions.percent,
+      key "÷" OperatorKey compact actions.divide,
 
-      key "7" NumberKey compact (Digit 7) send,
-      key "8" NumberKey compact (Digit 8) send,
-      key "9" NumberKey compact (Digit 9) send,
-      key "×" OperatorKey compact (SelectBinary Multiply) send,
+      key "7" NumberKey compact (actions.digit 7),
+      key "8" NumberKey compact (actions.digit 8),
+      key "9" NumberKey compact (actions.digit 9),
+      key "×" OperatorKey compact actions.multiply,
 
-      key "4" NumberKey compact (Digit 4) send,
-      key "5" NumberKey compact (Digit 5) send,
-      key "6" NumberKey compact (Digit 6) send,
-      key "−" OperatorKey compact (SelectBinary Subtract) send,
+      key "4" NumberKey compact (actions.digit 4),
+      key "5" NumberKey compact (actions.digit 5),
+      key "6" NumberKey compact (actions.digit 6),
+      key "−" OperatorKey compact actions.subtract,
 
-      key "1" NumberKey compact (Digit 1) send,
-      key "2" NumberKey compact (Digit 2) send,
-      key "3" NumberKey compact (Digit 3) send,
-      key "+" OperatorKey compact (SelectBinary Add) send,
+      key "1" NumberKey compact (actions.digit 1),
+      key "2" NumberKey compact (actions.digit 2),
+      key "3" NumberKey compact (actions.digit 3),
+      key "+" OperatorKey compact actions.add,
 
-      key "±" NumberKey compact ToggleSign send,
-      key "0" NumberKey compact (Digit 0) send,
-      key "." NumberKey compact DecimalPoint send,
-      key "=" OperatorKey compact Equals send,
+      key "±" NumberKey compact actions.toggleSign,
+      key "0" NumberKey compact (actions.digit 0),
+      key "." NumberKey compact actions.decimalPoint,
+      key "=" OperatorKey compact actions.equals,
     ],
   }
 
-fn angleLabel unit: AngleUnit -> String =
-  match unit {
-    Radians -> "Rad"
-    Degrees -> "Deg"
-  }
+fn scientificKey button: ScientificButton -> html.Html<Task<Unit>> =
+  components.scientificButton button.label button.action
 
-pub fn scientificKeypad unit: AngleUnit
-  -> send: (CalculatorAction -> Task<Unit>)
+pub fn scientificKeypad buttons: Array<ScientificButton>
   -> html.Html<Task<Unit>> =
   html.section {
     style: styles.scientificGridStyle (),
-    children: [
-      components.scientificButton "x²" (send (ApplyUnary Square)),
-      components.scientificButton "x³" (send (ApplyUnary Cube)),
-      components.scientificButton "xʸ" (send (SelectBinary Power)),
-      components.scientificButton "eˣ" (send (ApplyUnary Exponential)),
-      components.scientificButton "10ˣ" (send (ApplyUnary TenPower)),
-
-      components.scientificButton "1/x" (send (ApplyUnary Reciprocal)),
-      components.scientificButton "√x" (send (ApplyUnary SquareRoot)),
-      components.scientificButton "∛x" (send (ApplyUnary CubeRoot)),
-      components.scientificButton "ln" (send (ApplyUnary NaturalLog)),
-      components.scientificButton "log" (send (ApplyUnary Log10)),
-
-      components.scientificButton "x!" (send (ApplyUnary Factorial)),
-      components.scientificButton "sin" (send (ApplyUnary Sine)),
-      components.scientificButton "cos" (send (ApplyUnary Cosine)),
-      components.scientificButton "tan" (send (ApplyUnary Tangent)),
-      components.scientificButton "π" (send (ApplyUnary Pi)),
-
-      components.scientificButton (angleLabel unit) (send ToggleAngleUnit),
-      components.scientificButton "sinh" (send (ApplyUnary Sinh)),
-      components.scientificButton "cosh" (send (ApplyUnary Cosh)),
-      components.scientificButton "tanh" (send (ApplyUnary Tanh)),
-      components.scientificButton "e" (send (ApplyUnary Euler)),
-    ],
+    children: [scientificKey button | button <- buttons],
   }
