@@ -27,22 +27,27 @@ pub fn toolbar send: (CalculatorAction -> Task<Unit>)
     ],
   }
 
+fn captionView caption: String -> html.Html<Task<Unit>> =
+  html.div {
+    style: styles.captionStyle (),
+    children: caption,
+  }
+
+fn valueView value: String
+  -> scientific: Bool
+  -> html.Html<Task<Unit>> =
+  html.p {
+    style: styles.valueStyle scientific,
+    children: value,
+  }
+
 pub fn display caption: String
   -> value: String
   -> scientific: Bool
   -> html.Html<Task<Unit>> =
   html.section {
     style: styles.displayAreaStyle scientific,
-    children: [
-      html.div {
-        style: styles.captionStyle (),
-        children: caption,
-      },
-      html.p {
-        style: styles.valueStyle scientific,
-        children: value,
-      },
-    ],
+    children: [captionView caption, valueView value scientific],
   }
 
 pub fn keyButton label: String
