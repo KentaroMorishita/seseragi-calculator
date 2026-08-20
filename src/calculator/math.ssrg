@@ -1,3 +1,4 @@
+import * as host from "./host"
 import {
   Add,
   AngleUnit,
@@ -29,37 +30,6 @@ import {
   UnaryOperator,
 } from "./model"
 
-foreign "typescript" from "../../host/math.mjs" {
-  pure fn floatAdd left: Float -> right: Float -> Float = "add"
-  pure fn floatSubtract left: Float -> right: Float -> Float = "subtract"
-  pure fn floatMultiply left: Float -> right: Float -> Float = "multiply"
-  pure fn floatDivide left: Float -> right: Float -> Float = "divide"
-  pure fn floatPower base: Float -> exponent: Float -> Float = "power"
-
-  pure fn square value: Float -> Float
-  pure fn cube value: Float -> Float
-  pure fn reciprocal value: Float -> Float
-  pure fn squareRoot value: Float -> Float
-  pure fn cubeRoot value: Float -> Float
-  pure fn exponential value: Float -> Float
-  pure fn tenPower value: Float -> Float
-  pure fn naturalLog value: Float -> Float
-  pure fn log10 value: Float -> Float
-  pure fn factorial value: Float -> Float
-
-  pure fn sineRadians value: Float -> Float
-  pure fn cosineRadians value: Float -> Float
-  pure fn tangentRadians value: Float -> Float
-  pure fn sineDegrees value: Float -> Float
-  pure fn cosineDegrees value: Float -> Float
-  pure fn tangentDegrees value: Float -> Float
-  pure fn sinh value: Float -> Float
-  pure fn cosh value: Float -> Float
-  pure fn tanh value: Float -> Float
-  pure fn euler unit: Unit -> Float
-  pure fn pi unit: Unit -> Float
-}
-
 pub fn binarySymbol operator: BinaryOperator -> String =
   match operator {
     Add -> "+"
@@ -74,29 +44,29 @@ pub fn evaluateBinary operator: BinaryOperator
   -> right: Float
   -> Float =
   match operator {
-    Add -> floatAdd left right
-    Subtract -> floatSubtract left right
-    Multiply -> floatMultiply left right
-    Divide -> floatDivide left right
-    Power -> floatPower left right
+    Add -> host.floatAdd left right
+    Subtract -> host.floatSubtract left right
+    Multiply -> host.floatMultiply left right
+    Divide -> host.floatDivide left right
+    Power -> host.floatPower left right
   }
 
 fn sine unit: AngleUnit -> value: Float -> Float =
   match unit {
-    Radians -> sineRadians value
-    Degrees -> sineDegrees value
+    Radians -> host.sineRadians value
+    Degrees -> host.sineDegrees value
   }
 
 fn cosine unit: AngleUnit -> value: Float -> Float =
   match unit {
-    Radians -> cosineRadians value
-    Degrees -> cosineDegrees value
+    Radians -> host.cosineRadians value
+    Degrees -> host.cosineDegrees value
   }
 
 fn tangent unit: AngleUnit -> value: Float -> Float =
   match unit {
-    Radians -> tangentRadians value
-    Degrees -> tangentDegrees value
+    Radians -> host.tangentRadians value
+    Degrees -> host.tangentDegrees value
   }
 
 pub fn evaluateUnary unit: AngleUnit
@@ -104,24 +74,24 @@ pub fn evaluateUnary unit: AngleUnit
   -> value: Float
   -> Float =
   match operator {
-    Square -> square value
-    Cube -> cube value
-    Reciprocal -> reciprocal value
-    SquareRoot -> squareRoot value
-    CubeRoot -> cubeRoot value
-    Exponential -> exponential value
-    TenPower -> tenPower value
-    NaturalLog -> naturalLog value
-    Log10 -> log10 value
-    Factorial -> factorial value
+    Square -> host.square value
+    Cube -> host.cube value
+    Reciprocal -> host.reciprocal value
+    SquareRoot -> host.squareRoot value
+    CubeRoot -> host.cubeRoot value
+    Exponential -> host.exponential value
+    TenPower -> host.tenPower value
+    NaturalLog -> host.naturalLog value
+    Log10 -> host.log10 value
+    Factorial -> host.factorial value
     Sine -> sine unit value
     Cosine -> cosine unit value
     Tangent -> tangent unit value
-    Sinh -> sinh value
-    Cosh -> cosh value
-    Tanh -> tanh value
-    Euler -> euler ()
-    Pi -> pi ()
+    Sinh -> host.sinh value
+    Cosh -> host.cosh value
+    Tanh -> host.tanh value
+    Euler -> host.euler ()
+    Pi -> host.pi ()
   }
 
 pub fn unaryExpression operator: UnaryOperator -> operand: String -> String =
