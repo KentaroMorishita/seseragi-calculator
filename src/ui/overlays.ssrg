@@ -1,55 +1,38 @@
 import * as arrays from "std/array"
 import * as html from "std/web/html"
-import {
-  Basic,
-  CalculatorAction,
-  CalculatorMode,
-  CloseOverlay,
-  HistoryEntry,
-  RecallHistory,
-  Scientific,
-  SelectMode,
-} from "../calculator/model"
 import * as styles from "./styles"
 
-fn modeSelected target: CalculatorMode -> current: CalculatorMode -> Bool =
-  match target {
-    Basic ->
-      match current {
-        Basic -> True
-        Scientific -> False
-      }
-    Scientific ->
-      match current {
-        Basic -> False
-        Scientific -> True
-      }
-  }
+pub alias HistoryViewItem = {
+  expression: String,
+  result: String,
+  action: Task<Unit>,
+}
 
 fn modeOption label: String
-  -> target: CalculatorMode
-  -> current: CalculatorMode
-  -> send: (CalculatorAction -> Task<Unit>)
+  -> selected: Bool
+  -> action: Task<Unit>
   -> html.Html<Task<Unit>> =
   html.button {
     buttonType: "button",
-    onClick: send (SelectMode target),
-    style: styles.menuButtonStyle (modeSelected target current),
+    onClick: action,
+    style: styles.menuButtonStyle selected,
     children:
-      if modeSelected target current then
+      if selected then
         `✓  ${label}`
       else
         `   ${label}`,
   }
 
-pub fn modeMenu current: CalculatorMode
-  -> send: (CalculatorAction -> Task<Unit>)
+pub fn modeMenu basicSelected: Bool
+  -> scientificSelected: Bool
+  -> selectBasic: Task<Unit>
+  -> selectScientific: Task<Unit>
   -> html.Html<Task<Unit>> =
   html.div {
     style: styles.modeMenuStyle (),
     children: [
-      modeOption "Basic" Basic current send,
-      modeOption "Scientific" Scientific current send,
+      modeOption "Basic" basicSelected selectBasic,
+      modeOption "Scientific" scientificSelected selectScientific,
     ],
   }
 
@@ -65,12 +48,10 @@ fn historyResult value: String -> html.Html<Task<Unit>> =
     children: value,
   }
 
-fn historyItem send: (CalculatorAction -> Task<Unit>)
-  -> item: HistoryEntry
-  -> html.Html<Task<Unit>> =
+fn historyItem item: HistoryViewItem -> html.Html<Task<Unit>> =
   html.button {
     buttonType: "button",
-    onClick: send (RecallHistory item.value),
+    onClick: item.action,
     style: styles.historyItemStyle (),
     children: [
       historyExpression item.expression,
@@ -84,15 +65,14 @@ fn emptyHistory -> html.Html<Task<Unit>> =
     children: "No calculations yet",
   }
 
-fn historyItems entries: Array<HistoryEntry>
-  -> send: (CalculatorAction -> Task<Unit>)
+fn historyItems entries: Array<HistoryViewItem>
   -> html.Html<Task<Unit>> =
   if arrays.isEmpty entries then
     emptyHistory ()
   else
     html.div {
       children: [
-        historyItem send item
+        historyItem item
         | item <- arrays.take 8 (arrays.reverse entries)
       ],
     }
@@ -103,34 +83,32 @@ fn sheetTitle -> html.Html<Task<Unit>> =
     children: "History",
   }
 
-fn closeButton send: (CalculatorAction -> Task<Unit>)
-  -> html.Html<Task<Unit>> =
+fn closeButton action: Task<Unit> -> html.Html<Task<Unit>> =
   html.button {
     buttonType: "button",
-    onClick: send CloseOverlay,
+    onClick: action,
     style: styles.closeButtonStyle (),
     children: "×",
   }
 
-fn sheetHeader send: (CalculatorAction -> Task<Unit>)
-  -> html.Html<Task<Unit>> =
+fn sheetHeader closeAction: Task<Unit> -> html.Html<Task<Unit>> =
   html.header {
     style: styles.sheetHeaderStyle (),
-    children: [sheetTitle (), closeButton send],
+    children: [sheetTitle (), closeButton closeAction],
   }
 
-fn historyPanel entries: Array<HistoryEntry>
-  -> send: (CalculatorAction -> Task<Unit>)
+fn historyPanel entries: Array<HistoryViewItem>
+  -> closeAction: Task<Unit>
   -> html.Html<Task<Unit>> =
   html.section {
     style: styles.historySheetStyle (),
-    children: [sheetHeader send, historyItems entries send],
+    children: [sheetHeader closeAction, historyItems entries],
   }
 
-pub fn historySheet entries: Array<HistoryEntry>
-  -> send: (CalculatorAction -> Task<Unit>)
+pub fn historySheet entries: Array<HistoryViewItem>
+  -> closeAction: Task<Unit>
   -> html.Html<Task<Unit>> =
   html.div {
     style: styles.sheetLayerStyle (),
-    children: historyPanel entries send,
+    children: historyPanel entries closeAction,
   }
