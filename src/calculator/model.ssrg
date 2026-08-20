@@ -55,13 +55,13 @@ pub type PendingState =
   | NoPendingOperator
   | PendingOperator BinaryOperator
 
-pub struct HistoryEntry {
+pub alias HistoryEntry = {
   expression: String,
   result: String,
   value: Float,
 }
 
-pub struct CalculatorState {
+pub alias CalculatorState = {
   mode: CalculatorMode,
   overlay: Overlay,
   angleUnit: AngleUnit,
@@ -91,7 +91,7 @@ pub type CalculatorAction =
   | RecallHistory Float
 
 pub fn initialState -> CalculatorState =
-  CalculatorState {
+  {
     mode: Basic,
     overlay: NoOverlay,
     angleUnit: Radians,
