@@ -232,15 +232,15 @@ fn equals state: CalculatorState -> CalculatorState =
               let result: Float = math.evaluateBinary operator left right
               let expression: String =
                 `${floats.format left} ${math.binarySymbol operator} ${entry.displayText state.display}`
-              remember expression result
-                (CalculatorState {
+              remember expression result $
+                CalculatorState {
                   ...state,
                   phase: ShowingResult,
                   display: Value result,
                   caption: expression,
                   accumulator: NoAccumulator,
                   pending: NoPendingOperator,
-                })
+                }
             }
           }
       }
@@ -276,15 +276,15 @@ fn applyUnary operator: UnaryOperator
         caption: `${state.caption} ${expression}`,
       }
     NoPendingOperator ->
-      remember expression result
-        (CalculatorState {
+      remember expression result $
+        CalculatorState {
           ...state,
           phase: ShowingResult,
           display: Value result,
           caption: expression,
           accumulator: NoAccumulator,
           pending: NoPendingOperator,
-        })
+        }
   }
 }
 
