@@ -1,7 +1,7 @@
 import * as arrays from "std/array"
 import * as floats from "std/float"
 import * as ints from "std/int"
-import { Display } from "./model"
+import { Display, Entry, Value } from "./model"
 
 fn containsDecimal parts: Array<String> -> Bool =
   match arrays.find (\part: String -> part == ".") parts {
@@ -9,9 +9,12 @@ fn containsDecimal parts: Array<String> -> Bool =
     Just _ -> True
   }
 
+fn partsText parts: Array<String> -> String =
+  arrays.reduce "" (\text: String -> part: String -> text + part) parts
+
 pub fn displayText display: Display -> String =
   match display {
-    Entry parts -> if arrays.isEmpty parts then "0" else join "" parts
+    Entry parts -> partsText parts
     Value value -> floats.format value
   }
 
@@ -19,7 +22,7 @@ pub fn displayValue display: Display -> Float =
   match display {
     Value value -> value
     Entry parts ->
-      match floats.parse (if arrays.isEmpty parts then "0" else join "" parts) {
+      match floats.parse (partsText parts) {
         Left _ -> 0.0
         Right value -> value
       }
@@ -32,7 +35,7 @@ pub fn appendDigit digit: Int -> display: Display -> Display =
   match display {
     Value _ -> startDigit digit
     Entry parts ->
-      if join "" parts == "0" then
+      if partsText parts == "0" then
         Entry [ints.format digit]
       else if arrays.length parts >= 12 then
         display
@@ -49,14 +52,16 @@ pub fn appendDecimal display: Display -> Display =
     Entry parts ->
       if containsDecimal parts then
         display
-      else if arrays.isEmpty parts then
-        startDecimal ()
       else
         Entry (arrays.append ["."] parts)
   }
 
 pub fn backspace display: Display -> Display =
   match display {
-    Value _ -> Entry []
-    Entry parts -> Entry (arrays.take (arrays.length parts - 1) parts)
+    Value _ -> Entry ["0"]
+    Entry parts ->
+      if arrays.length parts <= 1 then
+        Entry ["0"]
+      else
+        Entry (arrays.take (arrays.length parts - 1) parts)
   }
