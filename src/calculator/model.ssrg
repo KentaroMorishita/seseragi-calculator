@@ -1,3 +1,8 @@
+import * as arrays from "std/array"
+import * as floats from "std/float"
+import * as entry from "./entry"
+import * as math from "./math"
+
 pub type CalculatorMode =
   | Basic
   | Scientific
@@ -55,13 +60,13 @@ pub type PendingState =
   | NoPendingOperator
   | PendingOperator BinaryOperator
 
-pub alias HistoryEntry = {
+pub struct HistoryEntry {
   expression: String,
   result: String,
   value: Float,
 }
 
-pub alias CalculatorState = {
+pub struct CalculatorState {
   mode: CalculatorMode,
   overlay: Overlay,
   angleUnit: AngleUnit,
@@ -91,7 +96,7 @@ pub type CalculatorAction =
   | RecallHistory Float
 
 pub fn initialState -> CalculatorState =
-  {
+  CalculatorState {
     mode: Basic,
     overlay: NoOverlay,
     angleUnit: Radians,
@@ -101,4 +106,375 @@ pub fn initialState -> CalculatorState =
     accumulator: NoAccumulator,
     pending: NoPendingOperator,
     history: [],
+  }
+
+pub fn displayText display: Display -> String =
+  match display {
+    Entry parts -> entry.text parts
+    Value value -> floats.format value
+  }
+
+fn displayValue display: Display -> Float =
+  match display {
+    Entry parts -> entry.value parts
+    Value value -> value
+  }
+
+fn binarySymbol operator: BinaryOperator -> String =
+  match operator {
+    Add -> "+"
+    Subtract -> "−"
+    Multiply -> "×"
+    Divide -> "÷"
+    Power -> "^"
+  }
+
+fn evaluateBinary operator: BinaryOperator
+  -> left: Float
+  -> right: Float
+  -> Float =
+  match operator {
+    Add -> math.add left right
+    Subtract -> math.subtract left right
+    Multiply -> math.multiply left right
+    Divide -> math.divide left right
+    Power -> math.power left right
+  }
+
+fn angleValue unit: AngleUnit -> value: Float -> Float =
+  match unit {
+    Radians -> value
+    Degrees -> math.degreesToRadians value
+  }
+
+fn evaluateUnary unit: AngleUnit
+  -> operator: UnaryOperator
+  -> value: Float
+  -> Float =
+  match operator {
+    Square -> math.square value
+    Cube -> math.cube value
+    Reciprocal -> math.reciprocal value
+    SquareRoot -> math.squareRoot value
+    CubeRoot -> math.cubeRoot value
+    Exponential -> math.exponential value
+    TenPower -> math.tenPower value
+    NaturalLog -> math.naturalLog value
+    Log10 -> math.log10 value
+    Factorial -> math.factorial value
+    Sine -> math.sineRadians (angleValue unit value)
+    Cosine -> math.cosineRadians (angleValue unit value)
+    Tangent -> math.tangentRadians (angleValue unit value)
+    Sinh -> math.sinh value
+    Cosh -> math.cosh value
+    Tanh -> math.tanh value
+    Euler -> math.euler ()
+    Pi -> math.pi ()
+  }
+
+fn unaryExpression operator: UnaryOperator -> operand: String -> String =
+  match operator {
+    Square -> `(${operand})²`
+    Cube -> `(${operand})³`
+    Reciprocal -> `1/(${operand})`
+    SquareRoot -> `√(${operand})`
+    CubeRoot -> `∛(${operand})`
+    Exponential -> `e^(${operand})`
+    TenPower -> `10^(${operand})`
+    NaturalLog -> `ln(${operand})`
+    Log10 -> `log(${operand})`
+    Factorial -> `(${operand})!`
+    Sine -> `sin(${operand})`
+    Cosine -> `cos(${operand})`
+    Tangent -> `tan(${operand})`
+    Sinh -> `sinh(${operand})`
+    Cosh -> `cosh(${operand})`
+    Tanh -> `tanh(${operand})`
+    Euler -> "e"
+    Pi -> "π"
+  }
+
+fn resetCalculation state: CalculatorState -> CalculatorState =
+  CalculatorState {
+    ...state,
+    overlay: NoOverlay,
+    phase: Editing,
+    display: Entry ["0"],
+    caption: "",
+    accumulator: NoAccumulator,
+    pending: NoPendingOperator,
+  }
+
+fn remember expression: String
+  -> result: Float
+  -> state: CalculatorState
+  -> CalculatorState = {
+  let item: HistoryEntry = HistoryEntry {
+    expression,
+    result: floats.format result,
+    value: result,
+  }
+  let latest: Array<HistoryEntry> = arrays.append [item] state.history
+  CalculatorState {
+    ...state,
+    history: arrays.take 30 latest,
+  }
+}
+
+fn freshDigit digit: Int -> state: CalculatorState -> CalculatorState =
+  CalculatorState {
+    ...state,
+    phase: Editing,
+    display: Entry (entry.startDigit digit),
+    caption: "",
+    accumulator: NoAccumulator,
+    pending: NoPendingOperator,
+  }
+
+fn inputDigit digit: Int -> state: CalculatorState -> CalculatorState =
+  match state.phase {
+    Editing ->
+      match state.display {
+        Entry parts -> CalculatorState {
+          ...state,
+          display: Entry (entry.appendDigit digit parts),
+        }
+        Value _ -> CalculatorState {
+          ...state,
+          display: Entry (entry.startDigit digit),
+        }
+      }
+    AwaitingOperand -> CalculatorState {
+      ...state,
+      phase: Editing,
+      display: Entry (entry.startDigit digit),
+    }
+    ShowingResult -> freshDigit digit state
+  }
+
+fn inputDecimal state: CalculatorState -> CalculatorState =
+  match state.phase {
+    Editing ->
+      match state.display {
+        Entry parts -> CalculatorState {
+          ...state,
+          display: Entry (entry.appendDecimal parts),
+        }
+        Value _ -> CalculatorState {
+          ...state,
+          display: Entry (entry.startDecimal ()),
+        }
+      }
+    AwaitingOperand -> CalculatorState {
+      ...state,
+      phase: Editing,
+      display: Entry (entry.startDecimal ()),
+    }
+    ShowingResult -> CalculatorState {
+      ...state,
+      phase: Editing,
+      display: Entry (entry.startDecimal ()),
+      caption: "",
+      accumulator: NoAccumulator,
+      pending: NoPendingOperator,
+    }
+  }
+
+fn deleteDigit state: CalculatorState -> CalculatorState =
+  match state.phase {
+    AwaitingOperand -> state
+    ShowingResult -> state
+    Editing ->
+      match state.display {
+        Value _ -> CalculatorState { ...state, display: Entry ["0"] }
+        Entry parts -> CalculatorState {
+          ...state,
+          display: Entry (entry.backspace parts),
+        }
+      }
+  }
+
+fn toggleSign state: CalculatorState -> CalculatorState = {
+  let current: Float = displayValue state.display
+  CalculatorState {
+    ...state,
+    phase: Editing,
+    display: Value (math.subtract 0.0 current),
+  }
+}
+
+fn percent state: CalculatorState -> CalculatorState =
+  match state.phase {
+    AwaitingOperand -> state
+    Editing -> CalculatorState {
+      ...state,
+      display: Value (math.divide (displayValue state.display) 100.0),
+    }
+    ShowingResult -> CalculatorState {
+      ...state,
+      display: Value (math.divide (displayValue state.display) 100.0),
+    }
+  }
+
+fn startBinary operator: BinaryOperator
+  -> state: CalculatorState
+  -> CalculatorState = {
+  let current: Float = displayValue state.display
+  CalculatorState {
+    ...state,
+    phase: AwaitingOperand,
+    accumulator: StoredAccumulator current,
+    pending: PendingOperator operator,
+    caption: `${displayText state.display} ${binarySymbol operator}`,
+  }
+}
+
+fn chainBinary operator: BinaryOperator
+  -> previous: BinaryOperator
+  -> left: Float
+  -> state: CalculatorState
+  -> CalculatorState = {
+  let right: Float = displayValue state.display
+  let result: Float = evaluateBinary previous left right
+  CalculatorState {
+    ...state,
+    phase: AwaitingOperand,
+    display: Value result,
+    accumulator: StoredAccumulator result,
+    pending: PendingOperator operator,
+    caption: `${floats.format result} ${binarySymbol operator}`,
+  }
+}
+
+fn selectBinary operator: BinaryOperator
+  -> state: CalculatorState
+  -> CalculatorState =
+  match state.pending {
+    NoPendingOperator -> startBinary operator state
+    PendingOperator previous ->
+      match state.accumulator {
+        NoAccumulator -> startBinary operator state
+        StoredAccumulator left ->
+          match state.phase {
+            AwaitingOperand -> CalculatorState {
+              ...state,
+              pending: PendingOperator operator,
+              caption: `${displayText state.display} ${binarySymbol operator}`,
+            }
+            Editing -> chainBinary operator previous left state
+            ShowingResult -> startBinary operator state
+          }
+      }
+  }
+
+fn equals state: CalculatorState -> CalculatorState =
+  match state.phase {
+    AwaitingOperand -> state
+    ShowingResult -> state
+    Editing ->
+      match state.pending {
+        NoPendingOperator -> state
+        PendingOperator operator ->
+          match state.accumulator {
+            NoAccumulator -> state
+            StoredAccumulator left -> {
+              let right: Float = displayValue state.display
+              let result: Float = evaluateBinary operator left right
+              let expression: String =
+                `${floats.format left} ${binarySymbol operator} ${displayText state.display}`
+              remember expression result $
+                CalculatorState {
+                  ...state,
+                  phase: ShowingResult,
+                  display: Value result,
+                  caption: expression,
+                  accumulator: NoAccumulator,
+                  pending: NoPendingOperator,
+                }
+            }
+          }
+      }
+  }
+
+fn unaryOperand state: CalculatorState -> Float =
+  match state.phase {
+    AwaitingOperand -> 0.0
+    Editing -> displayValue state.display
+    ShowingResult -> displayValue state.display
+  }
+
+fn unaryOperandText state: CalculatorState -> String =
+  match state.phase {
+    AwaitingOperand -> "0"
+    Editing -> displayText state.display
+    ShowingResult -> displayText state.display
+  }
+
+fn applyUnary operator: UnaryOperator
+  -> state: CalculatorState
+  -> CalculatorState = {
+  let operand: Float = unaryOperand state
+  let operandText: String = unaryOperandText state
+  let result: Float = evaluateUnary state.angleUnit operator operand
+  let expression: String = unaryExpression operator operandText
+  match state.pending {
+    PendingOperator _ -> CalculatorState {
+      ...state,
+      phase: Editing,
+      display: Value result,
+      caption: `${state.caption} ${expression}`,
+    }
+    NoPendingOperator ->
+      remember expression result $
+        CalculatorState {
+          ...state,
+          phase: ShowingResult,
+          display: Value result,
+          caption: expression,
+          accumulator: NoAccumulator,
+          pending: NoPendingOperator,
+        }
+  }
+}
+
+fn toggleAngleUnit state: CalculatorState -> CalculatorState =
+  CalculatorState {
+    ...state,
+    angleUnit:
+      match state.angleUnit {
+        Radians -> Degrees
+        Degrees -> Radians
+      },
+  }
+
+fn recall value: Float -> state: CalculatorState -> CalculatorState =
+  CalculatorState {
+    ...state,
+    overlay: NoOverlay,
+    phase: ShowingResult,
+    display: Value value,
+    caption: "",
+    accumulator: NoAccumulator,
+    pending: NoPendingOperator,
+  }
+
+pub fn update action: CalculatorAction
+  -> state: CalculatorState
+  -> CalculatorState =
+  match action {
+    Digit digit -> inputDigit digit state
+    DecimalPoint -> inputDecimal state
+    Backspace -> deleteDigit state
+    Clear -> resetCalculation state
+    ToggleSign -> toggleSign state
+    Percent -> percent state
+    SelectBinary operator -> selectBinary operator state
+    Equals -> equals state
+    ApplyUnary operator -> applyUnary operator state
+    ToggleAngleUnit -> toggleAngleUnit state
+    OpenModeMenu -> CalculatorState { ...state, overlay: ModeMenu }
+    SelectMode mode -> CalculatorState { ...state, mode, overlay: NoOverlay }
+    OpenHistory -> CalculatorState { ...state, overlay: HistorySheet }
+    CloseOverlay -> CalculatorState { ...state, overlay: NoOverlay }
+    RecallHistory value -> recall value state
   }
