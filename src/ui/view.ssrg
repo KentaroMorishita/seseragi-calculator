@@ -1,10 +1,15 @@
 import * as html from "std/web/html"
 import * as entry from "../calculator/entry"
 import {
+  Basic,
   CalculatorAction,
   CalculatorMode,
   CalculatorState,
+  HistorySheet,
+  ModeMenu,
+  NoOverlay,
   Overlay,
+  Scientific,
 } from "../calculator/model"
 import * as components from "./components"
 import * as keypads from "./keypads"
