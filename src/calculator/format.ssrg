@@ -89,6 +89,23 @@ fn group raw: String -> String =
     renderGroupedAt codes 0 integerDigits 0
   }
 
+fn magnitude value: Float -> Float =
+  match floats.totalCompare value 0.0 {
+    Less -> 0.0 - value
+    Equal -> value
+    Greater -> value
+  }
+
+fn displayValue value: Float -> Float = {
+  let nearest: Float = floats.roundIntegral numbers.HalfEven value
+  let difference: Float = magnitude (value - nearest)
+  match floats.totalCompare difference 0.000000001 {
+    Less -> nearest
+    Equal -> nearest
+    Greater -> value
+  }
+}
+
 fn floatRaw value: Float -> String =
   match floats.toInt numbers.TowardZero value {
     Left _ -> floats.format value
@@ -145,8 +162,10 @@ fn expressionAt raw: bytes.Bytes -> codes: Array<Int> -> index: Int -> String =
         }
     }
 
-pub fn displayFloat value: Float -> String =
-  group (floatRaw value)
+pub fn displayFloat value: Float -> String = {
+  let normalized: Float = displayValue value
+  group (floatRaw normalized)
+}
 
 pub fn displayEntry value: String -> String =
   group value
