@@ -2,6 +2,7 @@ import * as floats from "std/float"
 import * as numbers from "std/number"
 
 let piValue = 3.141592653589793
+let halfPiValue = 1.5707963267948966
 let eValue = 2.718281828459045
 let ln10Value = 2.302585092994046
 let tauValue = 6.283185307179586
@@ -19,8 +20,7 @@ fn normalizeRadians value: Float -> Float = {
 
 pub fn degreesToRadians value: Float -> Float = value * piValue / 180.0
 
-pub fn sineRadians value: Float -> Float = {
-  let x: Float = normalizeRadians value
+fn sineCore x: Float -> Float = {
   let x2: Float = x * x
   let x3: Float = x * x2
   let x5: Float = x3 * x2
@@ -28,18 +28,66 @@ pub fn sineRadians value: Float -> Float = {
   let x9: Float = x7 * x2
   let x11: Float = x9 * x2
   let x13: Float = x11 * x2
-  x - x3 / 6.0 + x5 / 120.0 - x7 / 5040.0 + x9 / 362880.0 - x11 / 39916800.0 + x13 / 6227020800.0
+  let x15: Float = x13 * x2
+  x - x3 / 6.0 + x5 / 120.0 - x7 / 5040.0 + x9 / 362880.0 - x11 / 39916800.0 + x13 / 6227020800.0 - x15 / 1307674368000.0
 }
 
-pub fn cosineRadians value: Float -> Float = {
-  let x: Float = normalizeRadians value
+fn cosineCore x: Float -> Float = {
   let x2: Float = x * x
   let x4: Float = x2 * x2
   let x6: Float = x4 * x2
   let x8: Float = x6 * x2
   let x10: Float = x8 * x2
   let x12: Float = x10 * x2
-  1.0 - x2 / 2.0 + x4 / 24.0 - x6 / 720.0 + x8 / 40320.0 - x10 / 3628800.0 + x12 / 479001600.0
+  let x14: Float = x12 * x2
+  let x16: Float = x14 * x2
+  1.0 - x2 / 2.0 + x4 / 24.0 - x6 / 720.0 + x8 / 40320.0 - x10 / 3628800.0 + x12 / 479001600.0 - x14 / 87178291200.0 + x16 / 20922789888000.0
+}
+
+pub fn sineRadians value: Float -> Float = {
+  let x: Float = normalizeRadians value
+  match floats.totalCompare x halfPiValue {
+    Greater -> {
+      let reduced: Float = piValue - x
+      sineCore reduced
+    }
+    Equal -> sineCore x
+    Less -> {
+      let negativeHalfPi: Float = 0.0 - halfPiValue
+      match floats.totalCompare x negativeHalfPi {
+        Less -> {
+          let negativePi: Float = 0.0 - piValue
+          let reduced: Float = negativePi - x
+          sineCore reduced
+        }
+        Equal -> sineCore x
+        Greater -> sineCore x
+      }
+    }
+  }
+}
+
+pub fn cosineRadians value: Float -> Float = {
+  let x: Float = normalizeRadians value
+  match floats.totalCompare x halfPiValue {
+    Greater -> {
+      let reduced: Float = piValue - x
+      0.0 - cosineCore reduced
+    }
+    Equal -> cosineCore x
+    Less -> {
+      let negativeHalfPi: Float = 0.0 - halfPiValue
+      match floats.totalCompare x negativeHalfPi {
+        Less -> {
+          let negativePi: Float = 0.0 - piValue
+          let reduced: Float = negativePi - x
+          0.0 - cosineCore reduced
+        }
+        Equal -> cosineCore x
+        Greater -> cosineCore x
+      }
+    }
+  }
 }
 
 pub fn tangentRadians value: Float -> Float =
