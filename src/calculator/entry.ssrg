@@ -1,0 +1,59 @@
+import * as arrays from "std/array"
+import * as floats from "std/float"
+import { Display } from "./model"
+
+fn containsDecimal parts: Array<String> -> Bool =
+  match arrays.find (\part: String -> part == ".") parts {
+    Nothing -> False
+    Just _ -> True
+  }
+
+pub fn displayText display: Display -> String =
+  match display {
+    Entry parts -> if arrays.isEmpty parts then "0" else join "" parts
+    Value value -> floats.format value
+  }
+
+pub fn displayValue display: Display -> Float =
+  match display {
+    Value value -> value
+    Entry parts ->
+      match floats.parse (if arrays.isEmpty parts then "0" else join "" parts) {
+        Left _ -> 0.0
+        Right value -> value
+      }
+  }
+
+pub fn startDigit digit: Int -> Display =
+  Entry [show digit]
+
+pub fn appendDigit digit: Int -> display: Display -> Display =
+  match display {
+    Value _ -> startDigit digit
+    Entry parts ->
+      if join "" parts == "0" then
+        Entry [show digit]
+      else
+        Entry (arrays.append [show digit] parts)
+  }
+
+pub fn startDecimal -> Display =
+  Entry ["0", "."]
+
+pub fn appendDecimal display: Display -> Display =
+  match display {
+    Value _ -> startDecimal ()
+    Entry parts ->
+      if containsDecimal parts then
+        display
+      else if arrays.isEmpty parts then
+        startDecimal ()
+      else
+        Entry (arrays.append ["."] parts)
+  }
+
+pub fn backspace display: Display -> Display =
+  match display {
+    Value _ -> Entry []
+    Entry parts -> Entry (arrays.take (arrays.length parts - 1) parts)
+  }

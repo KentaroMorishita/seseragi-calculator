@@ -1,0 +1,89 @@
+import * as html from "std/web/html"
+import {
+  AngleUnit,
+  BinaryOperator,
+  CalculatorAction,
+  UnaryOperator,
+} from "../calculator/model"
+import * as components from "./components"
+import * as styles from "./styles"
+import { KeyTone } from "./styles"
+
+fn key label: String
+  -> tone: KeyTone
+  -> compact: Bool
+  -> action: CalculatorAction
+  -> send: (CalculatorAction -> Task<Unit>)
+  -> html.Html<Task<Unit>> =
+  components.keyButton label tone compact (send action)
+
+pub fn basicKeypad compact: Bool
+  -> send: (CalculatorAction -> Task<Unit>)
+  -> html.Html<Task<Unit>> =
+  html.section {
+    style: styles.basicGridStyle compact,
+    children: [
+      key "⌫" UtilityKey compact Backspace send,
+      key "AC" UtilityKey compact Clear send,
+      key "%" UtilityKey compact Percent send,
+      key "÷" OperatorKey compact (SelectBinary Divide) send,
+
+      key "7" NumberKey compact (Digit 7) send,
+      key "8" NumberKey compact (Digit 8) send,
+      key "9" NumberKey compact (Digit 9) send,
+      key "×" OperatorKey compact (SelectBinary Multiply) send,
+
+      key "4" NumberKey compact (Digit 4) send,
+      key "5" NumberKey compact (Digit 5) send,
+      key "6" NumberKey compact (Digit 6) send,
+      key "−" OperatorKey compact (SelectBinary Subtract) send,
+
+      key "1" NumberKey compact (Digit 1) send,
+      key "2" NumberKey compact (Digit 2) send,
+      key "3" NumberKey compact (Digit 3) send,
+      key "+" OperatorKey compact (SelectBinary Add) send,
+
+      key "±" NumberKey compact ToggleSign send,
+      key "0" NumberKey compact (Digit 0) send,
+      key "." NumberKey compact DecimalPoint send,
+      key "=" OperatorKey compact Equals send,
+    ],
+  }
+
+fn angleLabel unit: AngleUnit -> String =
+  match unit {
+    Radians -> "Rad"
+    Degrees -> "Deg"
+  }
+
+pub fn scientificKeypad unit: AngleUnit
+  -> send: (CalculatorAction -> Task<Unit>)
+  -> html.Html<Task<Unit>> =
+  html.section {
+    style: styles.scientificGridStyle (),
+    children: [
+      components.scientificButton "x²" (send (ApplyUnary Square)),
+      components.scientificButton "x³" (send (ApplyUnary Cube)),
+      components.scientificButton "xʸ" (send (SelectBinary Power)),
+      components.scientificButton "eˣ" (send (ApplyUnary Exponential)),
+      components.scientificButton "10ˣ" (send (ApplyUnary TenPower)),
+
+      components.scientificButton "1/x" (send (ApplyUnary Reciprocal)),
+      components.scientificButton "√x" (send (ApplyUnary SquareRoot)),
+      components.scientificButton "∛x" (send (ApplyUnary CubeRoot)),
+      components.scientificButton "ln" (send (ApplyUnary NaturalLog)),
+      components.scientificButton "log" (send (ApplyUnary Log10)),
+
+      components.scientificButton "x!" (send (ApplyUnary Factorial)),
+      components.scientificButton "sin" (send (ApplyUnary Sine)),
+      components.scientificButton "cos" (send (ApplyUnary Cosine)),
+      components.scientificButton "tan" (send (ApplyUnary Tangent)),
+      components.scientificButton "π" (send (ApplyUnary Pi)),
+
+      components.scientificButton (angleLabel unit) (send ToggleAngleUnit),
+      components.scientificButton "sinh" (send (ApplyUnary Sinh)),
+      components.scientificButton "cosh" (send (ApplyUnary Cosh)),
+      components.scientificButton "tanh" (send (ApplyUnary Tanh)),
+      components.scientificButton "e" (send (ApplyUnary Euler)),
+    ],
+  }

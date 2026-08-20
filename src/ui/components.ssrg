@@ -1,0 +1,64 @@
+import * as html from "std/web/html"
+import { CalculatorAction } from "../calculator/model"
+import * as styles from "./styles"
+import { KeyTone } from "./styles"
+
+pub fn iconButton label: String
+  -> action: Task<Unit>
+  -> html.Html<Task<Unit>> =
+  html.button {
+    buttonType: "button",
+    onClick: action,
+    style: styles.iconButtonStyle (),
+    children: label,
+  }
+
+pub fn toolbar send: (CalculatorAction -> Task<Unit>)
+  -> html.Html<Task<Unit>> =
+  html.header {
+    style: styles.toolbarStyle (),
+    children: [
+      iconButton "◷" (send OpenHistory),
+      iconButton "ƒx" (send OpenModeMenu),
+    ],
+  }
+
+pub fn display caption: String
+  -> value: String
+  -> scientific: Bool
+  -> html.Html<Task<Unit>> =
+  html.section {
+    style: styles.displayAreaStyle scientific,
+    children: [
+      html.div {
+        style: styles.captionStyle (),
+        children: caption,
+      },
+      html.p {
+        style: styles.valueStyle scientific,
+        children: value,
+      },
+    ],
+  }
+
+pub fn keyButton label: String
+  -> tone: KeyTone
+  -> compact: Bool
+  -> action: Task<Unit>
+  -> html.Html<Task<Unit>> =
+  html.button {
+    buttonType: "button",
+    onClick: action,
+    style: styles.keyButtonStyle tone compact,
+    children: label,
+  }
+
+pub fn scientificButton label: String
+  -> action: Task<Unit>
+  -> html.Html<Task<Unit>> =
+  html.button {
+    buttonType: "button",
+    onClick: action,
+    style: styles.scientificButtonStyle (),
+    children: label,
+  }

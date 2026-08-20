@@ -1,0 +1,236 @@
+import * as html from "std/web/html"
+
+pub type KeyTone =
+  | NumberKey
+  | UtilityKey
+  | OperatorKey
+
+fn keyBackground tone: KeyTone -> String =
+  match tone {
+    NumberKey -> "#333333"
+    UtilityKey -> "#6b6b6d"
+    OperatorKey -> "#ff9500"
+  }
+
+pub fn pageStyle -> html.Style =
+  html.style {
+    backgroundColor: "#000000",
+    color: "#ffffff",
+    minHeight: "100dvh",
+  }
+
+pub fn shellStyle -> html.Style =
+  html.style {
+    backgroundColor: "#000000",
+    display: "flex",
+    flexDirection: "column",
+    marginLeft: "auto",
+    marginRight: "auto",
+    maxWidth: "460px",
+    minHeight: "100dvh",
+    padding: "18px 16px 24px",
+    position: "relative",
+  }
+
+pub fn toolbarStyle -> html.Style =
+  html.style {
+    alignItems: "center",
+    display: "flex",
+    justifyContent: "space-between",
+    minHeight: "58px",
+  }
+
+pub fn iconButtonStyle -> html.Style =
+  html.style {
+    alignItems: "center",
+    backgroundColor: "#1c1c1e",
+    border: "1px solid #333336",
+    borderRadius: "999px",
+    color: "#f5f5f7",
+    display: "flex",
+    fontSize: "22px",
+    height: "48px",
+    justifyContent: "center",
+    padding: "0",
+    width: "48px",
+  }
+
+pub fn displayAreaStyle scientific: Bool -> html.Style =
+  html.style {
+    alignItems: "flex-end",
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "flex-end",
+    minHeight: if scientific then "142px" else "310px",
+    paddingBottom: if scientific then "12px" else "22px",
+    paddingLeft: "4px",
+    paddingRight: "4px",
+  }
+
+pub fn captionStyle -> html.Style =
+  html.style {
+    color: "#6f6f73",
+    fontSize: "20px",
+    minHeight: "28px",
+    textAlign: "right",
+    width: "100%",
+  }
+
+pub fn valueStyle scientific: Bool -> html.Style =
+  html.style {
+    color: "#ffffff",
+    fontSize: if scientific then "64px" else "clamp(68px, 22vw, 96px)",
+    fontWeight: "300",
+    letterSpacing: "-0.04em",
+    lineHeight: "1",
+    margin: "4px 0 0",
+    textAlign: "right",
+    width: "100%",
+  }
+
+pub fn basicGridStyle scientific: Bool -> html.Style =
+  html.style {
+    display: "grid",
+    gap: if scientific then "10px" else "12px",
+    gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
+  }
+
+pub fn scientificGridStyle -> html.Style =
+  html.style {
+    display: "grid",
+    gap: "8px",
+    gridTemplateColumns: "repeat(5, minmax(0, 1fr))",
+    marginBottom: "12px",
+  }
+
+pub fn keyButtonStyle tone: KeyTone -> compact: Bool -> html.Style =
+  html.style {
+    backgroundColor: keyBackground tone,
+    border: "0",
+    borderRadius: "999px",
+    color: "#ffffff",
+    fontSize: if compact then "20px" else "34px",
+    fontWeight: "400",
+    height: if compact then "54px" else "clamp(72px, 20vw, 88px)",
+    padding: "0",
+    width: "100%",
+  }
+
+pub fn scientificButtonStyle -> html.Style =
+  html.style {
+    backgroundColor: "#1c1c1e",
+    border: "1px solid #303033",
+    borderRadius: "20px",
+    color: "#f5f5f7",
+    fontSize: "16px",
+    height: "46px",
+    padding: "0",
+    width: "100%",
+  }
+
+pub fn modeMenuStyle -> html.Style =
+  html.style {
+    backgroundColor: "#151516",
+    border: "1px solid #343437",
+    borderRadius: "28px",
+    padding: "12px",
+    position: "absolute",
+    right: "16px",
+    top: "78px",
+    width: "260px",
+    zIndex: "30",
+  }
+
+pub fn menuButtonStyle selected: Bool -> html.Style =
+  html.style {
+    backgroundColor: if selected then "#252527" else "#151516",
+    border: "0",
+    borderRadius: "16px",
+    color: "#ffffff",
+    fontSize: "18px",
+    padding: "14px 16px",
+    textAlign: "left",
+    width: "100%",
+  }
+
+pub fn sheetLayerStyle -> html.Style =
+  html.style {
+    alignItems: "flex-end",
+    backgroundColor: "#00000099",
+    bottom: "0",
+    display: "flex",
+    left: "0",
+    position: "absolute",
+    right: "0",
+    top: "0",
+    zIndex: "40",
+  }
+
+pub fn historySheetStyle -> html.Style =
+  html.style {
+    backgroundColor: "#1c1c1e",
+    border: "1px solid #39393d",
+    borderRadius: "32px 32px 0 0",
+    padding: "18px 20px 28px",
+    width: "100%",
+  }
+
+pub fn sheetHeaderStyle -> html.Style =
+  html.style {
+    alignItems: "center",
+    display: "flex",
+    justifyContent: "space-between",
+    marginBottom: "12px",
+  }
+
+pub fn sheetTitleStyle -> html.Style =
+  html.style {
+    fontSize: "24px",
+    fontWeight: "600",
+    margin: "0",
+  }
+
+pub fn closeButtonStyle -> html.Style =
+  html.style {
+    backgroundColor: "#303033",
+    border: "0",
+    borderRadius: "999px",
+    color: "#ffffff",
+    fontSize: "24px",
+    height: "44px",
+    padding: "0",
+    width: "44px",
+  }
+
+pub fn historyItemStyle -> html.Style =
+  html.style {
+    backgroundColor: "#1c1c1e",
+    border: "0",
+    borderTop: "1px solid #3a3a3d",
+    color: "#ffffff",
+    padding: "14px 0",
+    textAlign: "left",
+    width: "100%",
+  }
+
+pub fn historyExpressionStyle -> html.Style =
+  html.style {
+    color: "#8e8e93",
+    fontSize: "15px",
+    margin: "0 0 4px",
+  }
+
+pub fn historyResultStyle -> html.Style =
+  html.style {
+    color: "#ffffff",
+    fontSize: "23px",
+    margin: "0",
+  }
+
+pub fn emptyHistoryStyle -> html.Style =
+  html.style {
+    color: "#8e8e93",
+    fontSize: "16px",
+    padding: "26px 0 18px",
+    textAlign: "center",
+  }

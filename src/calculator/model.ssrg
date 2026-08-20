@@ -1,0 +1,96 @@
+pub type CalculatorMode =
+  | Basic
+  | Scientific
+
+pub type Overlay =
+  | NoOverlay
+  | ModeMenu
+  | HistorySheet
+
+pub type AngleUnit =
+  | Radians
+  | Degrees
+
+pub type InputPhase =
+  | Editing
+  | AwaitingOperand
+  | ShowingResult
+
+pub type BinaryOperator =
+  | Add
+  | Subtract
+  | Multiply
+  | Divide
+  | Power
+
+pub type UnaryOperator =
+  | Square
+  | Cube
+  | Reciprocal
+  | SquareRoot
+  | CubeRoot
+  | Exponential
+  | TenPower
+  | NaturalLog
+  | Log10
+  | Factorial
+  | Sine
+  | Cosine
+  | Tangent
+  | Sinh
+  | Cosh
+  | Tanh
+  | Euler
+  | Pi
+
+pub type Display =
+  | Entry (Array<String>)
+  | Value Float
+
+pub struct HistoryEntry {
+  expression: String,
+  result: String,
+  value: Float,
+}
+
+pub struct CalculatorState {
+  mode: CalculatorMode,
+  overlay: Overlay,
+  angleUnit: AngleUnit,
+  phase: InputPhase,
+  display: Display,
+  caption: String,
+  accumulator: Maybe<Float>,
+  pending: Maybe<BinaryOperator>,
+  history: Array<HistoryEntry>,
+}
+
+pub type CalculatorAction =
+  | Digit Int
+  | DecimalPoint
+  | Backspace
+  | Clear
+  | ToggleSign
+  | Percent
+  | SelectBinary BinaryOperator
+  | Equals
+  | ApplyUnary UnaryOperator
+  | ToggleAngleUnit
+  | OpenModeMenu
+  | SelectMode CalculatorMode
+  | OpenHistory
+  | CloseOverlay
+  | RecallHistory Float
+
+pub fn initialState -> CalculatorState =
+  CalculatorState {
+    mode: Basic,
+    overlay: NoOverlay,
+    angleUnit: Radians,
+    phase: Editing,
+    display: Entry [],
+    caption: "",
+    accumulator: Nothing,
+    pending: Nothing,
+    history: [],
+  }

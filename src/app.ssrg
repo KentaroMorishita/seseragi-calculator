@@ -1,0 +1,25 @@
+import * as html from "std/web/html"
+import * as signals from "std/signal"
+import { MutableSignal, Signal } from "std/signal"
+import {
+  CalculatorAction,
+  CalculatorState,
+  initialState,
+} from "./calculator/model"
+import { update } from "./calculator/update"
+import { view } from "./ui/view"
+
+fn dispatch state: MutableSignal<CalculatorState>
+  -> action: CalculatorAction
+  -> Task<Unit> =
+  signals.update (update action) state
+
+fn render state: MutableSignal<CalculatorState>
+  -> current: CalculatorState
+  -> html.Html<Task<Unit>> =
+  view (dispatch state) current
+
+pub effect fn create -> Signal<html.Html<Task<Unit>>> fails Never = do {
+  state <- signals.make $ initialState ()
+  succeed $ signals.map (render state) state
+}

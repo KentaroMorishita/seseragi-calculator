@@ -1,0 +1,110 @@
+import * as arrays from "std/array"
+import * as html from "std/web/html"
+import {
+  CalculatorAction,
+  CalculatorMode,
+  HistoryEntry,
+} from "../calculator/model"
+import * as styles from "./styles"
+
+fn modeSelected target: CalculatorMode -> current: CalculatorMode -> Bool =
+  match target {
+    Basic ->
+      match current {
+        Basic -> True
+        Scientific -> False
+      }
+    Scientific ->
+      match current {
+        Basic -> False
+        Scientific -> True
+      }
+  }
+
+fn modeOption label: String
+  -> target: CalculatorMode
+  -> current: CalculatorMode
+  -> send: (CalculatorAction -> Task<Unit>)
+  -> html.Html<Task<Unit>> =
+  html.button {
+    buttonType: "button",
+    onClick: send (SelectMode target),
+    style: styles.menuButtonStyle (modeSelected target current),
+    children:
+      if modeSelected target current then
+        `✓  ${label}`
+      else
+        `   ${label}`,
+  }
+
+pub fn modeMenu current: CalculatorMode
+  -> send: (CalculatorAction -> Task<Unit>)
+  -> html.Html<Task<Unit>> =
+  html.div {
+    style: styles.modeMenuStyle (),
+    children: [
+      modeOption "Basic" Basic current send,
+      modeOption "Scientific" Scientific current send,
+    ],
+  }
+
+fn historyItem send: (CalculatorAction -> Task<Unit>)
+  -> item: HistoryEntry
+  -> html.Html<Task<Unit>> =
+  html.button {
+    buttonType: "button",
+    onClick: send (RecallHistory item.value),
+    style: styles.historyItemStyle (),
+    children: [
+      html.p {
+        style: styles.historyExpressionStyle (),
+        children: item.expression,
+      },
+      html.p {
+        style: styles.historyResultStyle (),
+        children: item.result,
+      },
+    ],
+  }
+
+fn historyItems entries: Array<HistoryEntry>
+  -> send: (CalculatorAction -> Task<Unit>)
+  -> html.Html<Task<Unit>> =
+  if arrays.isEmpty entries then
+    html.div {
+      style: styles.emptyHistoryStyle (),
+      children: "No calculations yet",
+    }
+  else
+    html.div {
+      children: map (historyItem send) (arrays.take 8 entries),
+    }
+
+pub fn historySheet entries: Array<HistoryEntry>
+  -> send: (CalculatorAction -> Task<Unit>)
+  -> html.Html<Task<Unit>> =
+  html.div {
+    style: styles.sheetLayerStyle (),
+    children:
+      html.section {
+        style: styles.historySheetStyle (),
+        children: [
+          html.header {
+            style: styles.sheetHeaderStyle (),
+            children: [
+              html.h2 {
+                style: styles.sheetTitleStyle (),
+                children: "History",
+              },
+              html.button {
+                buttonType: "button",
+                onClick: send CloseOverlay,
+                style: styles.closeButtonStyle (),
+                children: "×",
+              },
+            ],
+          },
+          historyItems entries send,
+        ],
+      },
+  }
