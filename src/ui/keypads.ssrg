@@ -1,0 +1,87 @@
+import * as html from "std/web/html"
+import * as components from "./components"
+import * as styles from "./styles"
+import {
+  KeyTone,
+  NumberKey,
+  OperatorKey,
+  UtilityKey,
+} from "./styles"
+
+pub alias BasicActions = {
+  zero: Task<Unit>,
+  one: Task<Unit>,
+  two: Task<Unit>,
+  three: Task<Unit>,
+  four: Task<Unit>,
+  five: Task<Unit>,
+  six: Task<Unit>,
+  seven: Task<Unit>,
+  eight: Task<Unit>,
+  nine: Task<Unit>,
+  decimalPoint: Task<Unit>,
+  backspace: Task<Unit>,
+  clear: Task<Unit>,
+  percent: Task<Unit>,
+  divide: Task<Unit>,
+  multiply: Task<Unit>,
+  subtract: Task<Unit>,
+  add: Task<Unit>,
+  toggleSign: Task<Unit>,
+  equals: Task<Unit>,
+}
+
+pub alias ScientificButton = {
+  label: String,
+  action: Task<Unit>,
+}
+
+fn key label: String
+  -> tone: KeyTone
+  -> compact: Bool
+  -> action: Task<Unit>
+  -> html.Html<Task<Unit>> =
+  components.keyButton label tone compact action
+
+pub fn basicKeypad compact: Bool
+  -> actions: BasicActions
+  -> html.Html<Task<Unit>> =
+  html.section {
+    style: styles.basicGridStyle compact,
+    children: [
+      key "⌫" UtilityKey compact actions.backspace,
+      key "AC" UtilityKey compact actions.clear,
+      key "%" UtilityKey compact actions.percent,
+      key "÷" OperatorKey compact actions.divide,
+
+      key "7" NumberKey compact actions.seven,
+      key "8" NumberKey compact actions.eight,
+      key "9" NumberKey compact actions.nine,
+      key "×" OperatorKey compact actions.multiply,
+
+      key "4" NumberKey compact actions.four,
+      key "5" NumberKey compact actions.five,
+      key "6" NumberKey compact actions.six,
+      key "−" OperatorKey compact actions.subtract,
+
+      key "1" NumberKey compact actions.one,
+      key "2" NumberKey compact actions.two,
+      key "3" NumberKey compact actions.three,
+      key "+" OperatorKey compact actions.add,
+
+      key "±" NumberKey compact actions.toggleSign,
+      key "0" NumberKey compact actions.zero,
+      key "." NumberKey compact actions.decimalPoint,
+      key "=" OperatorKey compact actions.equals,
+    ],
+  }
+
+fn scientificKey button: ScientificButton -> html.Html<Task<Unit>> =
+  components.scientificButton button.label button.action
+
+pub fn scientificKeypad buttons: Array<ScientificButton>
+  -> html.Html<Task<Unit>> =
+  html.section {
+    style: styles.scientificGridStyle (),
+    children: [scientificKey button | button <- buttons],
+  }

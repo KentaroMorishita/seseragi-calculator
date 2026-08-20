@@ -1,0 +1,24 @@
+import * as html from "std/web/html"
+import * as styles from "./styles"
+
+fn calculator toolbar: html.Html<Task<Unit>>
+  -> display: html.Html<Task<Unit>>
+  -> scientificArea: html.Html<Task<Unit>>
+  -> basicKeypad: html.Html<Task<Unit>>
+  -> overlay: html.Html<Task<Unit>>
+  -> html.Html<Task<Unit>> =
+  html.div {
+    style: styles.shellStyle (),
+    children: [toolbar, display, scientificArea, basicKeypad, overlay],
+  }
+
+pub fn view toolbar: html.Html<Task<Unit>>
+  -> display: html.Html<Task<Unit>>
+  -> scientificArea: html.Html<Task<Unit>>
+  -> basicKeypad: html.Html<Task<Unit>>
+  -> overlay: html.Html<Task<Unit>>
+  -> html.Html<Task<Unit>> =
+  html.main {
+    style: styles.pageStyle (),
+    children: calculator toolbar display scientificArea basicKeypad overlay,
+  }

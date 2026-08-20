@@ -1,0 +1,156 @@
+import * as html from "std/web/html"
+import * as signals from "std/signal"
+import { MutableSignal, Signal } from "std/signal"
+import * as calculator from "./calculator/model"
+import * as components from "./ui/components"
+import * as keypads from "./ui/keypads"
+import * as overlays from "./ui/overlays"
+import * as screen from "./ui/view"
+
+fn dispatch state: MutableSignal<calculator.CalculatorState>
+  -> action: calculator.CalculatorAction
+  -> Task<Unit> =
+  signals.update (calculator.update action) state
+
+fn isScientific mode: calculator.CalculatorMode -> Bool =
+  match mode {
+    calculator.Basic -> False
+    calculator.Scientific -> True
+  }
+
+fn isBasic mode: calculator.CalculatorMode -> Bool =
+  match mode {
+    calculator.Basic -> True
+    calculator.Scientific -> False
+  }
+
+fn angleLabel unit: calculator.AngleUnit -> String =
+  match unit {
+    calculator.Radians -> "Rad"
+    calculator.Degrees -> "Deg"
+  }
+
+fn basicActions state: MutableSignal<calculator.CalculatorState>
+  -> keypads.BasicActions =
+  {
+    zero: dispatch state (calculator.Digit 0),
+    one: dispatch state (calculator.Digit 1),
+    two: dispatch state (calculator.Digit 2),
+    three: dispatch state (calculator.Digit 3),
+    four: dispatch state (calculator.Digit 4),
+    five: dispatch state (calculator.Digit 5),
+    six: dispatch state (calculator.Digit 6),
+    seven: dispatch state (calculator.Digit 7),
+    eight: dispatch state (calculator.Digit 8),
+    nine: dispatch state (calculator.Digit 9),
+    decimalPoint: dispatch state calculator.DecimalPoint,
+    backspace: dispatch state calculator.Backspace,
+    clear: dispatch state calculator.Clear,
+    percent: dispatch state calculator.Percent,
+    divide: dispatch state (calculator.SelectBinary calculator.Divide),
+    multiply: dispatch state (calculator.SelectBinary calculator.Multiply),
+    subtract: dispatch state (calculator.SelectBinary calculator.Subtract),
+    add: dispatch state (calculator.SelectBinary calculator.Add),
+    toggleSign: dispatch state calculator.ToggleSign,
+    equals: dispatch state calculator.Equals,
+  }
+
+fn scientificButton label: String
+  -> action: Task<Unit>
+  -> keypads.ScientificButton =
+  { label, action }
+
+fn scientificButtons state: MutableSignal<calculator.CalculatorState>
+  -> current: calculator.CalculatorState
+  -> Array<keypads.ScientificButton> =
+  [
+    scientificButton "x²" (dispatch state (calculator.ApplyUnary calculator.Square)),
+    scientificButton "x³" (dispatch state (calculator.ApplyUnary calculator.Cube)),
+    scientificButton "xʸ" (dispatch state (calculator.SelectBinary calculator.Power)),
+    scientificButton "eˣ" (dispatch state (calculator.ApplyUnary calculator.Exponential)),
+    scientificButton "10ˣ" (dispatch state (calculator.ApplyUnary calculator.TenPower)),
+
+    scientificButton "1/x" (dispatch state (calculator.ApplyUnary calculator.Reciprocal)),
+    scientificButton "√x" (dispatch state (calculator.ApplyUnary calculator.SquareRoot)),
+    scientificButton "∛x" (dispatch state (calculator.ApplyUnary calculator.CubeRoot)),
+    scientificButton "ln" (dispatch state (calculator.ApplyUnary calculator.NaturalLog)),
+    scientificButton "log" (dispatch state (calculator.ApplyUnary calculator.Log10)),
+
+    scientificButton "x!" (dispatch state (calculator.ApplyUnary calculator.Factorial)),
+    scientificButton "sin" (dispatch state (calculator.ApplyUnary calculator.Sine)),
+    scientificButton "cos" (dispatch state (calculator.ApplyUnary calculator.Cosine)),
+    scientificButton "tan" (dispatch state (calculator.ApplyUnary calculator.Tangent)),
+    scientificButton "π" (dispatch state (calculator.ApplyUnary calculator.Pi)),
+
+    scientificButton (angleLabel current.angleUnit) (dispatch state calculator.ToggleAngleUnit),
+    scientificButton "sinh" (dispatch state (calculator.ApplyUnary calculator.Sinh)),
+    scientificButton "cosh" (dispatch state (calculator.ApplyUnary calculator.Cosh)),
+    scientificButton "tanh" (dispatch state (calculator.ApplyUnary calculator.Tanh)),
+    scientificButton "e" (dispatch state (calculator.ApplyUnary calculator.Euler)),
+  ]
+
+fn scientificArea state: MutableSignal<calculator.CalculatorState>
+  -> current: calculator.CalculatorState
+  -> html.Html<Task<Unit>> =
+  match current.mode {
+    calculator.Basic -> html.div { children: "" }
+    calculator.Scientific -> keypads.scientificKeypad (scientificButtons state current)
+  }
+
+fn historyViewItem state: MutableSignal<calculator.CalculatorState>
+  -> item: calculator.HistoryEntry
+  -> overlays.HistoryViewItem =
+  {
+    expression: item.expression,
+    result: item.result,
+    action: dispatch state (calculator.RecallHistory item.value),
+  }
+
+fn historyViewItems state: MutableSignal<calculator.CalculatorState>
+  -> entries: Array<calculator.HistoryEntry>
+  -> Array<overlays.HistoryViewItem> =
+  [historyViewItem state item | item <- entries]
+
+fn modeMenuView state: MutableSignal<calculator.CalculatorState>
+  -> current: calculator.CalculatorState
+  -> html.Html<Task<Unit>> = {
+  let selectBasic: Task<Unit> = dispatch state (calculator.SelectMode calculator.Basic)
+  let selectScientific: Task<Unit> = dispatch state (calculator.SelectMode calculator.Scientific)
+  overlays.modeMenu (isBasic current.mode) (isScientific current.mode) selectBasic selectScientific
+}
+
+fn historySheetView state: MutableSignal<calculator.CalculatorState>
+  -> current: calculator.CalculatorState
+  -> html.Html<Task<Unit>> = {
+  let items: Array<overlays.HistoryViewItem> = historyViewItems state current.history
+  let closeAction: Task<Unit> = dispatch state calculator.CloseOverlay
+  overlays.historySheet items closeAction
+}
+
+fn overlayView state: MutableSignal<calculator.CalculatorState>
+  -> current: calculator.CalculatorState
+  -> html.Html<Task<Unit>> =
+  match current.overlay {
+    calculator.NoOverlay -> html.div { children: "" }
+    calculator.ModeMenu -> modeMenuView state current
+    calculator.HistorySheet -> historySheetView state current
+  }
+
+fn render state: MutableSignal<calculator.CalculatorState>
+  -> current: calculator.CalculatorState
+  -> html.Html<Task<Unit>> = {
+  let scientific: Bool = isScientific current.mode
+  let openHistory: Task<Unit> = dispatch state calculator.OpenHistory
+  let openModeMenu: Task<Unit> = dispatch state calculator.OpenModeMenu
+  let toolbarView: html.Html<Task<Unit>> = components.toolbar openHistory openModeMenu
+  let displayView: html.Html<Task<Unit>> = components.display current.caption (calculator.displayText current.display) scientific
+  let scientificView: html.Html<Task<Unit>> = scientificArea state current
+  let basicView: html.Html<Task<Unit>> = keypads.basicKeypad scientific (basicActions state)
+  let currentOverlay: html.Html<Task<Unit>> = overlayView state current
+  screen.view toolbarView displayView scientificView basicView currentOverlay
+}
+
+pub effect fn create -> Signal<html.Html<Task<Unit>>> fails Never = do {
+  state <- signals.make $ calculator.initialState ()
+  succeed $ signals.map (render state) state
+}

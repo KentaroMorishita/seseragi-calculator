@@ -1,0 +1,114 @@
+import * as arrays from "std/array"
+import * as html from "std/web/html"
+import * as styles from "./styles"
+
+pub alias HistoryViewItem = {
+  expression: String,
+  result: String,
+  action: Task<Unit>,
+}
+
+fn modeOption label: String
+  -> selected: Bool
+  -> action: Task<Unit>
+  -> html.Html<Task<Unit>> =
+  html.button {
+    buttonType: "button",
+    onClick: action,
+    style: styles.menuButtonStyle selected,
+    children:
+      if selected then
+        `✓  ${label}`
+      else
+        `   ${label}`,
+  }
+
+pub fn modeMenu basicSelected: Bool
+  -> scientificSelected: Bool
+  -> selectBasic: Task<Unit>
+  -> selectScientific: Task<Unit>
+  -> html.Html<Task<Unit>> =
+  html.div {
+    style: styles.modeMenuStyle (),
+    children: [
+      modeOption "Basic" basicSelected selectBasic,
+      modeOption "Scientific" scientificSelected selectScientific,
+    ],
+  }
+
+fn historyExpression value: String -> html.Html<Task<Unit>> =
+  html.p {
+    style: styles.historyExpressionStyle (),
+    children: value,
+  }
+
+fn historyResult value: String -> html.Html<Task<Unit>> =
+  html.p {
+    style: styles.historyResultStyle (),
+    children: value,
+  }
+
+fn historyItem item: HistoryViewItem -> html.Html<Task<Unit>> =
+  html.button {
+    buttonType: "button",
+    onClick: item.action,
+    style: styles.historyItemStyle (),
+    children: [
+      historyExpression item.expression,
+      historyResult item.result,
+    ],
+  }
+
+fn emptyHistory -> html.Html<Task<Unit>> =
+  html.div {
+    style: styles.emptyHistoryStyle (),
+    children: "No calculations yet",
+  }
+
+fn historyItems entries: Array<HistoryViewItem>
+  -> html.Html<Task<Unit>> =
+  if arrays.isEmpty entries then
+    emptyHistory ()
+  else
+    html.div {
+      children: [
+        historyItem item
+        | item <- arrays.take 8 (arrays.reverse entries)
+      ],
+    }
+
+fn sheetTitle -> html.Html<Task<Unit>> =
+  html.h2 {
+    style: styles.sheetTitleStyle (),
+    children: "History",
+  }
+
+fn closeButton action: Task<Unit> -> html.Html<Task<Unit>> =
+  html.button {
+    buttonType: "button",
+    onClick: action,
+    style: styles.closeButtonStyle (),
+    children: "×",
+  }
+
+fn sheetHeader closeAction: Task<Unit> -> html.Html<Task<Unit>> =
+  html.header {
+    style: styles.sheetHeaderStyle (),
+    children: [sheetTitle (), closeButton closeAction],
+  }
+
+fn historyPanel entries: Array<HistoryViewItem>
+  -> closeAction: Task<Unit>
+  -> html.Html<Task<Unit>> =
+  html.section {
+    style: styles.historySheetStyle (),
+    children: [sheetHeader closeAction, historyItems entries],
+  }
+
+pub fn historySheet entries: Array<HistoryViewItem>
+  -> closeAction: Task<Unit>
+  -> html.Html<Task<Unit>> =
+  html.div {
+    style: styles.sheetLayerStyle (),
+    children: historyPanel entries closeAction,
+  }

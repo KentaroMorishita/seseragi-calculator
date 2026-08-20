@@ -1,0 +1,133 @@
+import * as floats from "std/float"
+import * as numbers from "std/number"
+
+let piValue = 3.141592653589793
+let eValue = 2.718281828459045
+let ln10Value = 2.302585092994046
+let tauValue = 6.283185307179586
+
+pub fn add left: Float -> right: Float -> Float = left + right
+pub fn subtract left: Float -> right: Float -> Float = left - right
+pub fn multiply left: Float -> right: Float -> Float = left * right
+pub fn divide left: Float -> right: Float -> Float = left / right
+pub fn power left: Float -> right: Float -> Float = floats.power right left
+
+fn normalizeRadians value: Float -> Float = {
+  let turns: Float = floats.roundIntegral numbers.HalfEven (value / tauValue)
+  value - turns * tauValue
+}
+
+pub fn degreesToRadians value: Float -> Float = value * piValue / 180.0
+
+pub fn sineRadians value: Float -> Float = {
+  let x: Float = normalizeRadians value
+  let x2: Float = x * x
+  let x3: Float = x * x2
+  let x5: Float = x3 * x2
+  let x7: Float = x5 * x2
+  let x9: Float = x7 * x2
+  let x11: Float = x9 * x2
+  let x13: Float = x11 * x2
+  x - x3 / 6.0 + x5 / 120.0 - x7 / 5040.0 + x9 / 362880.0 - x11 / 39916800.0 + x13 / 6227020800.0
+}
+
+pub fn cosineRadians value: Float -> Float = {
+  let x: Float = normalizeRadians value
+  let x2: Float = x * x
+  let x4: Float = x2 * x2
+  let x6: Float = x4 * x2
+  let x8: Float = x6 * x2
+  let x10: Float = x8 * x2
+  let x12: Float = x10 * x2
+  1.0 - x2 / 2.0 + x4 / 24.0 - x6 / 720.0 + x8 / 40320.0 - x10 / 3628800.0 + x12 / 479001600.0
+}
+
+pub fn tangentRadians value: Float -> Float =
+  sineRadians value / cosineRadians value
+
+pub fn square value: Float -> Float = floats.power 2.0 value
+pub fn cube value: Float -> Float = floats.power 3.0 value
+pub fn reciprocal value: Float -> Float = 1.0 / value
+pub fn squareRoot value: Float -> Float = floats.power 0.5 value
+
+pub fn cubeRoot value: Float -> Float =
+  match floats.totalCompare value 0.0 {
+    Less -> 0.0 - floats.power (1.0 / 3.0) (0.0 - value)
+    Equal -> 0.0
+    Greater -> floats.power (1.0 / 3.0) value
+  }
+
+pub fn exponential value: Float -> Float = floats.power value eValue
+pub fn tenPower value: Float -> Float = floats.power value 10.0
+
+fn lnCore value: Float -> Float = {
+  let y: Float = (value - 1.0) / (value + 1.0)
+  let y2: Float = y * y
+  let y3: Float = y * y2
+  let y5: Float = y3 * y2
+  let y7: Float = y5 * y2
+  let y9: Float = y7 * y2
+  let y11: Float = y9 * y2
+  let y13: Float = y11 * y2
+  let y15: Float = y13 * y2
+  let y17: Float = y15 * y2
+  let y19: Float = y17 * y2
+  2.0 * (y + y3 / 3.0 + y5 / 5.0 + y7 / 7.0 + y9 / 9.0 + y11 / 11.0 + y13 / 13.0 + y15 / 15.0 + y17 / 17.0 + y19 / 19.0)
+}
+
+fn naturalLogScaled value: Float -> offset: Float -> Float =
+  match floats.totalCompare value eValue {
+    Greater -> naturalLogScaled (value / eValue) (offset + 1.0)
+    Equal -> offset + 1.0
+    Less ->
+      match floats.totalCompare value 0.36787944117144233 {
+        Less -> naturalLogScaled (value * eValue) (offset - 1.0)
+        Equal -> offset - 1.0
+        Greater -> offset + lnCore value
+      }
+  }
+
+pub fn naturalLog value: Float -> Float =
+  match floats.totalCompare value 0.0 {
+    Greater -> naturalLogScaled value 0.0
+    Equal -> floats.nan ()
+    Less -> floats.nan ()
+  }
+
+pub fn log10 value: Float -> Float = naturalLog value / ln10Value
+
+fn factorialLoop current: Int -> accumulator: Float -> Float =
+  if current <= 1 then
+    accumulator
+  else
+    factorialLoop (current - 1) (accumulator * floats.fromInt current)
+
+pub fn factorial value: Float -> Float =
+  match floats.toInt numbers.TowardZero value {
+    Left _ -> floats.nan ()
+    Right integer ->
+      if integer < 0 then
+        floats.nan ()
+      else if integer > 170 then
+        floats.nan ()
+      else if floats.ieeeEq (floats.fromInt integer) value then
+        factorialLoop integer 1.0
+      else
+        floats.nan ()
+  }
+
+pub fn sinh value: Float -> Float = {
+  let positive: Float = exponential value
+  let negative: Float = exponential (0.0 - value)
+  (positive - negative) / 2.0
+}
+
+pub fn cosh value: Float -> Float = {
+  let positive: Float = exponential value
+  let negative: Float = exponential (0.0 - value)
+  (positive + negative) / 2.0
+}
+
+pub fn tanh value: Float -> Float = sinh value / cosh value
+pub fn euler -> Float = eValue
+pub fn pi -> Float = piValue
