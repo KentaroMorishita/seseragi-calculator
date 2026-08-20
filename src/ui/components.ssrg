@@ -30,20 +30,22 @@ fn captionView caption: String -> html.Html<Task<Unit>> =
   }
 
 fn valueView value: String
+  -> valueWidth: Int
   -> scientific: Bool
   -> html.Html<Task<Unit>> =
   html.p {
-    style: styles.valueStyle scientific,
+    style: styles.valueStyle scientific valueWidth,
     children: value,
   }
 
 pub fn display caption: String
   -> value: String
+  -> valueWidth: Int
   -> scientific: Bool
   -> html.Html<Task<Unit>> =
   html.section {
     style: styles.displayAreaStyle scientific,
-    children: [captionView caption, valueView value scientific],
+    children: [captionView caption, valueView value valueWidth scientific],
   }
 
 pub fn keyButton label: String
