@@ -12,6 +12,21 @@ fn keyBackground tone: KeyTone -> String =
     OperatorKey -> "#ff9500"
   }
 
+fn displayFontSize scientific: Bool -> valueWidth: Int -> String =
+  if scientific then
+    if valueWidth <= 6 then "64px"
+    else if valueWidth <= 9 then "54px"
+    else if valueWidth <= 12 then "46px"
+    else if valueWidth <= 15 then "38px"
+    else "32px"
+  else
+    if valueWidth <= 6 then "clamp(68px, 22vw, 96px)"
+    else if valueWidth <= 9 then "clamp(58px, 18vw, 80px)"
+    else if valueWidth <= 12 then "clamp(48px, 15vw, 68px)"
+    else if valueWidth <= 15 then "clamp(40px, 12vw, 54px)"
+    else if valueWidth <= 18 then "clamp(34px, 10vw, 46px)"
+    else "32px"
+
 pub fn pageStyle -> html.Style =
   html.style {
     backgroundColor: "#000000",
@@ -76,19 +91,25 @@ pub fn captionStyle -> html.Style =
     color: "#6f6f73",
     fontSize: "20px",
     minHeight: "28px",
+    overflow: "hidden",
     textAlign: "right",
+    textOverflow: "ellipsis",
+    whiteSpace: "nowrap",
     width: "100%",
   }
 
-pub fn valueStyle scientific: Bool -> html.Style =
+pub fn valueStyle scientific: Bool -> valueWidth: Int -> html.Style =
   html.style {
     color: "#ffffff",
-    fontSize: if scientific then "64px" else "clamp(68px, 22vw, 96px)",
+    fontSize: displayFontSize scientific valueWidth,
+    fontVariantNumeric: "tabular-nums",
     fontWeight: "300",
     letterSpacing: "-0.04em",
     lineHeight: "1",
     margin: "4px 0 0",
+    overflow: "hidden",
     textAlign: "right",
+    whiteSpace: "nowrap",
     width: "100%",
   }
 
