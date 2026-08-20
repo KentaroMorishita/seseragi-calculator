@@ -5,8 +5,8 @@ import {
   CalculatorAction,
   CalculatorState,
   initialState,
+  update,
 } from "./calculator/model"
-import { update } from "./calculator/update"
 import { view } from "./ui/view"
 
 fn dispatch state: MutableSignal<CalculatorState>
