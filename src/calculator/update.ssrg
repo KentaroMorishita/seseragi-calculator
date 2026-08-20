@@ -54,7 +54,7 @@ import {
 } from "./model"
 
 fn resetCalculation state: CalculatorState -> CalculatorState =
-  CalculatorState {
+  {
     ...state,
     overlay: NoOverlay,
     phase: Editing,
@@ -69,13 +69,13 @@ fn remember expression: String
   -> state: CalculatorState
   -> CalculatorState = {
   let rendered: String = floats.format result
-  let item: HistoryEntry = HistoryEntry {
+  let item: HistoryEntry = {
     expression,
     result: rendered,
     value: result,
   }
   let latest: Array<HistoryEntry> = arrays.append state.history [item]
-  CalculatorState {
+  {
     ...state,
     history: arrays.take 30 latest,
   }
@@ -84,18 +84,18 @@ fn remember expression: String
 fn inputDigit digit: Int -> state: CalculatorState -> CalculatorState =
   match state.phase {
     Editing ->
-      CalculatorState {
+      {
         ...state,
         display: entry.appendDigit digit state.display,
       }
     AwaitingOperand ->
-      CalculatorState {
+      {
         ...state,
         phase: Editing,
         display: entry.startDigit digit,
       }
     ShowingResult ->
-      CalculatorState {
+      {
         ...state,
         phase: Editing,
         display: entry.startDigit digit,
@@ -108,18 +108,18 @@ fn inputDigit digit: Int -> state: CalculatorState -> CalculatorState =
 fn inputDecimal state: CalculatorState -> CalculatorState =
   match state.phase {
     Editing ->
-      CalculatorState {
+      {
         ...state,
         display: entry.appendDecimal state.display,
       }
     AwaitingOperand ->
-      CalculatorState {
+      {
         ...state,
         phase: Editing,
         display: entry.startDecimal (),
       }
     ShowingResult ->
-      CalculatorState {
+      {
         ...state,
         phase: Editing,
         display: entry.startDecimal (),
@@ -131,7 +131,7 @@ fn inputDecimal state: CalculatorState -> CalculatorState =
 
 fn deleteDigit state: CalculatorState -> CalculatorState =
   match state.phase {
-    Editing -> CalculatorState { ...state, display: entry.backspace state.display }
+    Editing -> { ...state, display: entry.backspace state.display }
     AwaitingOperand -> state
     ShowingResult -> state
   }
@@ -140,13 +140,13 @@ fn toggleSign state: CalculatorState -> CalculatorState = {
   let current: Float = entry.displayValue state.display
   match state.phase {
     AwaitingOperand ->
-      CalculatorState {
+      {
         ...state,
         phase: Editing,
         display: Value (0.0 - current),
       }
-    Editing -> CalculatorState { ...state, display: Value (0.0 - current) }
-    ShowingResult -> CalculatorState { ...state, display: Value (0.0 - current) }
+    Editing -> { ...state, display: Value (0.0 - current) }
+    ShowingResult -> { ...state, display: Value (0.0 - current) }
   }
 }
 
@@ -154,12 +154,12 @@ fn percent state: CalculatorState -> CalculatorState =
   match state.phase {
     AwaitingOperand -> state
     Editing ->
-      CalculatorState {
+      {
         ...state,
         display: Value (entry.displayValue state.display / 100.0),
       }
     ShowingResult ->
-      CalculatorState {
+      {
         ...state,
         display: Value (entry.displayValue state.display / 100.0),
       }
@@ -169,7 +169,7 @@ fn startBinary operator: BinaryOperator
   -> state: CalculatorState
   -> CalculatorState = {
   let current: Float = entry.displayValue state.display
-  CalculatorState {
+  {
     ...state,
     phase: AwaitingOperand,
     accumulator: StoredAccumulator current,
@@ -185,7 +185,7 @@ fn chainBinary operator: BinaryOperator
   -> CalculatorState = {
   let right: Float = entry.displayValue state.display
   let result: Float = math.evaluateBinary previous left right
-  CalculatorState {
+  {
     ...state,
     phase: AwaitingOperand,
     display: Value result,
@@ -206,7 +206,7 @@ fn selectBinary operator: BinaryOperator
         StoredAccumulator left ->
           match state.phase {
             AwaitingOperand ->
-              CalculatorState {
+              {
                 ...state,
                 pending: PendingOperator operator,
                 caption: `${entry.displayText state.display} ${math.binarySymbol operator}`,
@@ -233,7 +233,7 @@ fn equals state: CalculatorState -> CalculatorState =
               let expression: String =
                 `${floats.format left} ${math.binarySymbol operator} ${entry.displayText state.display}`
               remember expression result $
-                CalculatorState {
+                {
                   ...state,
                   phase: ShowingResult,
                   display: Value result,
@@ -269,7 +269,7 @@ fn applyUnary operator: UnaryOperator
   let expression: String = math.unaryExpression operator operandText
   match state.pending {
     PendingOperator _ ->
-      CalculatorState {
+      {
         ...state,
         phase: Editing,
         display: Value result,
@@ -277,7 +277,7 @@ fn applyUnary operator: UnaryOperator
       }
     NoPendingOperator ->
       remember expression result $
-        CalculatorState {
+        {
           ...state,
           phase: ShowingResult,
           display: Value result,
@@ -289,7 +289,7 @@ fn applyUnary operator: UnaryOperator
 }
 
 fn toggleAngleUnit state: CalculatorState -> CalculatorState =
-  CalculatorState {
+  {
     ...state,
     angleUnit:
       match state.angleUnit {
@@ -299,7 +299,7 @@ fn toggleAngleUnit state: CalculatorState -> CalculatorState =
   }
 
 fn recall value: Float -> state: CalculatorState -> CalculatorState =
-  CalculatorState {
+  {
     ...state,
     overlay: NoOverlay,
     phase: ShowingResult,
@@ -323,9 +323,9 @@ pub fn update action: CalculatorAction
     Equals -> equals state
     ApplyUnary operator -> applyUnary operator state
     ToggleAngleUnit -> toggleAngleUnit state
-    OpenModeMenu -> CalculatorState { ...state, overlay: ModeMenu }
-    SelectMode mode -> CalculatorState { ...state, mode, overlay: NoOverlay }
-    OpenHistory -> CalculatorState { ...state, overlay: HistorySheet }
-    CloseOverlay -> CalculatorState { ...state, overlay: NoOverlay }
+    OpenModeMenu -> { ...state, overlay: ModeMenu }
+    SelectMode mode -> { ...state, mode, overlay: NoOverlay }
+    OpenHistory -> { ...state, overlay: HistorySheet }
+    CloseOverlay -> { ...state, overlay: NoOverlay }
     RecallHistory value -> recall value state
   }
