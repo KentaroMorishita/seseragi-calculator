@@ -1,6 +1,35 @@
 import * as floats from "std/float"
 import * as numbers from "std/number"
-import { AngleUnit, BinaryOperator, UnaryOperator } from "./model"
+import {
+  Add,
+  AngleUnit,
+  BinaryOperator,
+  Cosine,
+  Cosh,
+  Cube,
+  CubeRoot,
+  Degrees,
+  Divide,
+  Euler,
+  Exponential,
+  Factorial,
+  Log10,
+  Multiply,
+  NaturalLog,
+  Pi,
+  Power,
+  Radians,
+  Reciprocal,
+  Sine,
+  Sinh,
+  Square,
+  SquareRoot,
+  Subtract,
+  Tangent,
+  Tanh,
+  TenPower,
+  UnaryOperator,
+} from "./model"
 
 let piValue = 3.141592653589793
 let eValue = 2.718281828459045
