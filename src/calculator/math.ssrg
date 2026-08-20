@@ -1,74 +1,25 @@
 import * as floats from "std/float"
 import * as numbers from "std/number"
-import {
-  Add,
-  AngleUnit,
-  BinaryOperator,
-  Cosine,
-  Cosh,
-  Cube,
-  CubeRoot,
-  Degrees,
-  Divide,
-  Euler,
-  Exponential,
-  Factorial,
-  Log10,
-  Multiply,
-  NaturalLog,
-  Pi,
-  Power,
-  Radians,
-  Reciprocal,
-  Sine,
-  Sinh,
-  Square,
-  SquareRoot,
-  Subtract,
-  Tangent,
-  Tanh,
-  TenPower,
-  UnaryOperator,
-} from "./model"
 
 let piValue = 3.141592653589793
 let eValue = 2.718281828459045
 let ln10Value = 2.302585092994046
 let tauValue = 6.283185307179586
 
-pub fn binarySymbol operator: BinaryOperator -> String =
-  match operator {
-    Add -> "+"
-    Subtract -> "−"
-    Multiply -> "×"
-    Divide -> "÷"
-    Power -> "^"
-  }
-
-pub fn evaluateBinary operator: BinaryOperator
-  -> left: Float
-  -> right: Float
-  -> Float =
-  match operator {
-    Add -> left + right
-    Subtract -> left - right
-    Multiply -> left * right
-    Divide -> left / right
-    Power -> floats.power right left
-  }
+pub fn add left: Float -> right: Float -> Float = left + right
+pub fn subtract left: Float -> right: Float -> Float = left - right
+pub fn multiply left: Float -> right: Float -> Float = left * right
+pub fn divide left: Float -> right: Float -> Float = left / right
+pub fn power left: Float -> right: Float -> Float = floats.power right left
 
 fn normalizeRadians value: Float -> Float = {
   let turns: Float = floats.roundIntegral numbers.HalfEven (value / tauValue)
   value - turns * tauValue
 }
 
-fn toRadians unit: AngleUnit -> value: Float -> Float =
-  match unit {
-    Radians -> value
-    Degrees -> value * piValue / 180.0
-  }
+pub fn degreesToRadians value: Float -> Float = value * piValue / 180.0
 
-fn sineRadians value: Float -> Float = {
+pub fn sineRadians value: Float -> Float = {
   let x: Float = normalizeRadians value
   let x2: Float = x * x
   let x3: Float = x * x2
@@ -80,7 +31,7 @@ fn sineRadians value: Float -> Float = {
   x - x3 / 6.0 + x5 / 120.0 - x7 / 5040.0 + x9 / 362880.0 - x11 / 39916800.0 + x13 / 6227020800.0
 }
 
-fn cosineRadians value: Float -> Float = {
+pub fn cosineRadians value: Float -> Float = {
   let x: Float = normalizeRadians value
   let x2: Float = x * x
   let x4: Float = x2 * x2
@@ -91,8 +42,23 @@ fn cosineRadians value: Float -> Float = {
   1.0 - x2 / 2.0 + x4 / 24.0 - x6 / 720.0 + x8 / 40320.0 - x10 / 3628800.0 + x12 / 479001600.0
 }
 
-fn exponential value: Float -> Float =
-  floats.power value eValue
+pub fn tangentRadians value: Float -> Float =
+  sineRadians value / cosineRadians value
+
+pub fn square value: Float -> Float = floats.power 2.0 value
+pub fn cube value: Float -> Float = floats.power 3.0 value
+pub fn reciprocal value: Float -> Float = 1.0 / value
+pub fn squareRoot value: Float -> Float = floats.power 0.5 value
+
+pub fn cubeRoot value: Float -> Float =
+  match floats.totalCompare value 0.0 {
+    Less -> 0.0 - floats.power (1.0 / 3.0) (0.0 - value)
+    Equal -> 0.0
+    Greater -> floats.power (1.0 / 3.0) value
+  }
+
+pub fn exponential value: Float -> Float = floats.power value eValue
+pub fn tenPower value: Float -> Float = floats.power value 10.0
 
 fn lnCore value: Float -> Float = {
   let y: Float = (value - 1.0) / (value + 1.0)
@@ -121,12 +87,14 @@ fn naturalLogScaled value: Float -> offset: Float -> Float =
       }
   }
 
-fn naturalLog value: Float -> Float =
+pub fn naturalLog value: Float -> Float =
   match floats.totalCompare value 0.0 {
     Greater -> naturalLogScaled value 0.0
     Equal -> floats.nan ()
     Less -> floats.nan ()
   }
+
+pub fn log10 value: Float -> Float = naturalLog value / ln10Value
 
 fn factorialLoop current: Int -> accumulator: Float -> Float =
   if current <= 1 then
@@ -134,7 +102,7 @@ fn factorialLoop current: Int -> accumulator: Float -> Float =
   else
     factorialLoop (current - 1) (accumulator * floats.fromInt current)
 
-fn factorial value: Float -> Float =
+pub fn factorial value: Float -> Float =
   match floats.toInt numbers.TowardZero value {
     Left _ -> floats.nan ()
     Right integer ->
@@ -148,68 +116,18 @@ fn factorial value: Float -> Float =
         floats.nan ()
   }
 
-fn cubeRoot value: Float -> Float =
-  match floats.totalCompare value 0.0 {
-    Less -> 0.0 - floats.power (1.0 / 3.0) (0.0 - value)
-    Equal -> 0.0
-    Greater -> floats.power (1.0 / 3.0) value
-  }
-
-fn sinhValue value: Float -> Float = {
+pub fn sinh value: Float -> Float = {
   let positive: Float = exponential value
   let negative: Float = exponential (0.0 - value)
   (positive - negative) / 2.0
 }
 
-fn coshValue value: Float -> Float = {
+pub fn cosh value: Float -> Float = {
   let positive: Float = exponential value
   let negative: Float = exponential (0.0 - value)
   (positive + negative) / 2.0
 }
 
-pub fn evaluateUnary unit: AngleUnit
-  -> operator: UnaryOperator
-  -> value: Float
-  -> Float =
-  match operator {
-    Square -> floats.power 2.0 value
-    Cube -> floats.power 3.0 value
-    Reciprocal -> 1.0 / value
-    SquareRoot -> floats.power 0.5 value
-    CubeRoot -> cubeRoot value
-    Exponential -> exponential value
-    TenPower -> floats.power value 10.0
-    NaturalLog -> naturalLog value
-    Log10 -> naturalLog value / ln10Value
-    Factorial -> factorial value
-    Sine -> sineRadians (toRadians unit value)
-    Cosine -> cosineRadians (toRadians unit value)
-    Tangent -> sineRadians (toRadians unit value) / cosineRadians (toRadians unit value)
-    Sinh -> sinhValue value
-    Cosh -> coshValue value
-    Tanh -> sinhValue value / coshValue value
-    Euler -> eValue
-    Pi -> piValue
-  }
-
-pub fn unaryExpression operator: UnaryOperator -> operand: String -> String =
-  match operator {
-    Square -> `(${operand})²`
-    Cube -> `(${operand})³`
-    Reciprocal -> `1/(${operand})`
-    SquareRoot -> `√(${operand})`
-    CubeRoot -> `∛(${operand})`
-    Exponential -> `e^(${operand})`
-    TenPower -> `10^(${operand})`
-    NaturalLog -> `ln(${operand})`
-    Log10 -> `log(${operand})`
-    Factorial -> `(${operand})!`
-    Sine -> `sin(${operand})`
-    Cosine -> `cos(${operand})`
-    Tangent -> `tan(${operand})`
-    Sinh -> `sinh(${operand})`
-    Cosh -> `cosh(${operand})`
-    Tanh -> `tanh(${operand})`
-    Euler -> "e"
-    Pi -> "π"
-  }
+pub fn tanh value: Float -> Float = sinh value / cosh value
+pub fn euler -> Float = eValue
+pub fn pi -> Float = piValue
