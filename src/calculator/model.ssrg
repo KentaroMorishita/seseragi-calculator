@@ -47,6 +47,14 @@ pub type Display =
   | Entry (Array<String>)
   | Value Float
 
+pub type AccumulatorState =
+  | NoAccumulator
+  | StoredAccumulator Float
+
+pub type PendingState =
+  | NoPendingOperator
+  | PendingOperator BinaryOperator
+
 pub struct HistoryEntry {
   expression: String,
   result: String,
@@ -60,8 +68,8 @@ pub struct CalculatorState {
   phase: InputPhase,
   display: Display,
   caption: String,
-  accumulator: Maybe<Float>,
-  pending: Maybe<BinaryOperator>,
+  accumulator: AccumulatorState,
+  pending: PendingState,
   history: Array<HistoryEntry>,
 }
 
@@ -90,7 +98,7 @@ pub fn initialState -> CalculatorState =
     phase: Editing,
     display: Entry [],
     caption: "",
-    accumulator: Nothing,
-    pending: Nothing,
+    accumulator: NoAccumulator,
+    pending: NoPendingOperator,
     history: [],
   }
