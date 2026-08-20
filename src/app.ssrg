@@ -37,7 +37,11 @@ fn formattedDisplay display: calculator.Display -> String =
     calculator.Value value -> format.displayFloat value
   }
 
+fn clearLabel current: calculator.CalculatorState -> String =
+  if calculator.canClearEntry current then "C" else "AC"
+
 fn basicActions state: MutableSignal<calculator.CalculatorState>
+  -> current: calculator.CalculatorState
   -> keypads.BasicActions =
   {
     zero: dispatch state (calculator.Digit 0),
@@ -52,6 +56,7 @@ fn basicActions state: MutableSignal<calculator.CalculatorState>
     nine: dispatch state (calculator.Digit 9),
     decimalPoint: dispatch state calculator.DecimalPoint,
     backspace: dispatch state calculator.Backspace,
+    clearLabel: clearLabel current,
     clear: dispatch state calculator.Clear,
     percent: dispatch state calculator.Percent,
     divide: dispatch state (calculator.SelectBinary calculator.Divide),
@@ -155,7 +160,7 @@ fn render state: MutableSignal<calculator.CalculatorState>
   let displayCaption: String = format.expression current.caption
   let displayView: html.Html<Task<Unit>> = components.display displayCaption displayValue displayWidth scientific
   let scientificView: html.Html<Task<Unit>> = scientificArea state current
-  let basicView: html.Html<Task<Unit>> = keypads.basicKeypad scientific (basicActions state)
+  let basicView: html.Html<Task<Unit>> = keypads.basicKeypad scientific (basicActions state current)
   let currentOverlay: html.Html<Task<Unit>> = overlayView state current
   screen.view toolbarView displayView scientificView basicView currentOverlay
 }

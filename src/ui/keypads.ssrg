@@ -21,6 +21,7 @@ pub alias BasicActions = {
   nine: Task<Unit>,
   decimalPoint: Task<Unit>,
   backspace: Task<Unit>,
+  clearLabel: String,
   clear: Task<Unit>,
   percent: Task<Unit>,
   divide: Task<Unit>,
@@ -50,7 +51,7 @@ pub fn basicKeypad compact: Bool
     style: styles.basicGridStyle compact,
     children: [
       key "⌫" UtilityKey compact actions.backspace,
-      key "AC" UtilityKey compact actions.clear,
+      key actions.clearLabel UtilityKey compact actions.clear,
       key "%" UtilityKey compact actions.percent,
       key "÷" OperatorKey compact actions.divide,
 
