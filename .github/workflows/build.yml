@@ -26,6 +26,13 @@ jobs:
           seseragi build .
           test -f dist/index.html
 
+      - name: Reject unresolved generated expressions
+        run: |
+          if grep -R -n -E '=>[[:space:]]*_;' dist; then
+            echo "Generated bundle contains an unresolved Seseragi lowering placeholder."
+            exit 1
+          fi
+
       - name: Deploy to Vercel
         if: github.event_name != 'pull_request' && env.VERCEL_TOKEN != ''
         run: |
