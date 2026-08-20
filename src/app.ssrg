@@ -18,6 +18,12 @@ fn isScientific mode: calculator.CalculatorMode -> Bool =
     calculator.Scientific -> True
   }
 
+fn isBasic mode: calculator.CalculatorMode -> Bool =
+  match mode {
+    calculator.Basic -> True
+    calculator.Scientific -> False
+  }
+
 fn angleLabel unit: calculator.AngleUnit -> String =
   match unit {
     calculator.Radians -> "Rad"
@@ -105,42 +111,41 @@ fn historyViewItems state: MutableSignal<calculator.CalculatorState>
   -> Array<overlays.HistoryViewItem> =
   [historyViewItem state item | item <- entries]
 
+fn modeMenuView state: MutableSignal<calculator.CalculatorState>
+  -> current: calculator.CalculatorState
+  -> html.Html<Task<Unit>> = {
+  let selectBasic: Task<Unit> = dispatch state (calculator.SelectMode calculator.Basic)
+  let selectScientific: Task<Unit> = dispatch state (calculator.SelectMode calculator.Scientific)
+  overlays.modeMenu (isBasic current.mode) (isScientific current.mode) selectBasic selectScientific
+}
+
+fn historySheetView state: MutableSignal<calculator.CalculatorState>
+  -> current: calculator.CalculatorState
+  -> html.Html<Task<Unit>> = {
+  let items: Array<overlays.HistoryViewItem> = historyViewItems state current.history
+  let closeAction: Task<Unit> = dispatch state calculator.CloseOverlay
+  overlays.historySheet items closeAction
+}
+
 fn overlayView state: MutableSignal<calculator.CalculatorState>
   -> current: calculator.CalculatorState
   -> html.Html<Task<Unit>> =
   match current.overlay {
     calculator.NoOverlay -> html.div { children: "" }
-    calculator.ModeMenu ->
-      overlays.modeMenu
-        (match current.mode {
-          calculator.Basic -> True
-          calculator.Scientific -> False
-        })
-        (match current.mode {
-          calculator.Basic -> False
-          calculator.Scientific -> True
-        })
-        (dispatch state (calculator.SelectMode calculator.Basic))
-        (dispatch state (calculator.SelectMode calculator.Scientific))
-    calculator.HistorySheet ->
-      overlays.historySheet
-        (historyViewItems state current.history)
-        (dispatch state calculator.CloseOverlay)
+    calculator.ModeMenu -> modeMenuView state current
+    calculator.HistorySheet -> historySheetView state current
   }
 
 fn render state: MutableSignal<calculator.CalculatorState>
   -> current: calculator.CalculatorState
   -> html.Html<Task<Unit>> = {
   let scientific: Bool = isScientific current.mode
-  let toolbarView: html.Html<Task<Unit>> =
-    components.toolbar
-      (dispatch state calculator.OpenHistory)
-      (dispatch state calculator.OpenModeMenu)
-  let displayView: html.Html<Task<Unit>> =
-    components.display current.caption (calculator.displayText current.display) scientific
+  let openHistory: Task<Unit> = dispatch state calculator.OpenHistory
+  let openModeMenu: Task<Unit> = dispatch state calculator.OpenModeMenu
+  let toolbarView: html.Html<Task<Unit>> = components.toolbar openHistory openModeMenu
+  let displayView: html.Html<Task<Unit>> = components.display current.caption (calculator.displayText current.display) scientific
   let scientificView: html.Html<Task<Unit>> = scientificArea state current
-  let basicView: html.Html<Task<Unit>> =
-    keypads.basicKeypad scientific (basicActions state)
+  let basicView: html.Html<Task<Unit>> = keypads.basicKeypad scientific (basicActions state)
   let currentOverlay: html.Html<Task<Unit>> = overlayView state current
   screen.view toolbarView displayView scientificView basicView currentOverlay
 }
