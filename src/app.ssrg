@@ -27,7 +27,16 @@ fn angleLabel unit: calculator.AngleUnit -> String =
 fn basicActions state: MutableSignal<calculator.CalculatorState>
   -> keypads.BasicActions =
   {
-    digit: \digit: Int -> dispatch state (calculator.Digit digit),
+    zero: dispatch state (calculator.Digit 0),
+    one: dispatch state (calculator.Digit 1),
+    two: dispatch state (calculator.Digit 2),
+    three: dispatch state (calculator.Digit 3),
+    four: dispatch state (calculator.Digit 4),
+    five: dispatch state (calculator.Digit 5),
+    six: dispatch state (calculator.Digit 6),
+    seven: dispatch state (calculator.Digit 7),
+    eight: dispatch state (calculator.Digit 8),
+    nine: dispatch state (calculator.Digit 9),
     decimalPoint: dispatch state calculator.DecimalPoint,
     backspace: dispatch state calculator.Backspace,
     clear: dispatch state calculator.Clear,
