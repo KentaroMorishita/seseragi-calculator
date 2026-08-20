@@ -1,5 +1,6 @@
 import * as arrays from "std/array"
 import * as floats from "std/float"
+import * as ints from "std/int"
 import { Display } from "./model"
 
 fn containsDecimal parts: Array<String> -> Bool =
@@ -25,16 +26,18 @@ pub fn displayValue display: Display -> Float =
   }
 
 pub fn startDigit digit: Int -> Display =
-  Entry [show digit]
+  Entry [ints.format digit]
 
 pub fn appendDigit digit: Int -> display: Display -> Display =
   match display {
     Value _ -> startDigit digit
     Entry parts ->
       if join "" parts == "0" then
-        Entry [show digit]
+        Entry [ints.format digit]
+      else if arrays.length parts >= 12 then
+        display
       else
-        Entry (arrays.append [show digit] parts)
+        Entry (arrays.append [ints.format digit] parts)
   }
 
 pub fn startDecimal -> Display =
