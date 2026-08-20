@@ -53,6 +53,18 @@ pub fn modeMenu current: CalculatorMode
     ],
   }
 
+fn historyExpression value: String -> html.Html<Task<Unit>> =
+  html.p {
+    style: styles.historyExpressionStyle (),
+    children: value,
+  }
+
+fn historyResult value: String -> html.Html<Task<Unit>> =
+  html.p {
+    style: styles.historyResultStyle (),
+    children: value,
+  }
+
 fn historyItem send: (CalculatorAction -> Task<Unit>)
   -> item: HistoryEntry
   -> html.Html<Task<Unit>> =
@@ -61,55 +73,64 @@ fn historyItem send: (CalculatorAction -> Task<Unit>)
     onClick: send (RecallHistory item.value),
     style: styles.historyItemStyle (),
     children: [
-      html.p {
-        style: styles.historyExpressionStyle (),
-        children: item.expression,
-      },
-      html.p {
-        style: styles.historyResultStyle (),
-        children: item.result,
-      },
+      historyExpression item.expression,
+      historyResult item.result,
     ],
+  }
+
+fn emptyHistory -> html.Html<Task<Unit>> =
+  html.div {
+    style: styles.emptyHistoryStyle (),
+    children: "No calculations yet",
   }
 
 fn historyItems entries: Array<HistoryEntry>
   -> send: (CalculatorAction -> Task<Unit>)
   -> html.Html<Task<Unit>> =
   if arrays.isEmpty entries then
-    html.div {
-      style: styles.emptyHistoryStyle (),
-      children: "No calculations yet",
-    }
+    emptyHistory ()
   else
     html.div {
-      children: [historyItem send item | item <- arrays.take 8 entries],
+      children: [
+        historyItem send item
+        | item <- arrays.take 8 (arrays.reverse entries)
+      ],
     }
+
+fn sheetTitle -> html.Html<Task<Unit>> =
+  html.h2 {
+    style: styles.sheetTitleStyle (),
+    children: "History",
+  }
+
+fn closeButton send: (CalculatorAction -> Task<Unit>)
+  -> html.Html<Task<Unit>> =
+  html.button {
+    buttonType: "button",
+    onClick: send CloseOverlay,
+    style: styles.closeButtonStyle (),
+    children: "×",
+  }
+
+fn sheetHeader send: (CalculatorAction -> Task<Unit>)
+  -> html.Html<Task<Unit>> =
+  html.header {
+    style: styles.sheetHeaderStyle (),
+    children: [sheetTitle (), closeButton send],
+  }
+
+fn historyPanel entries: Array<HistoryEntry>
+  -> send: (CalculatorAction -> Task<Unit>)
+  -> html.Html<Task<Unit>> =
+  html.section {
+    style: styles.historySheetStyle (),
+    children: [sheetHeader send, historyItems entries send],
+  }
 
 pub fn historySheet entries: Array<HistoryEntry>
   -> send: (CalculatorAction -> Task<Unit>)
   -> html.Html<Task<Unit>> =
   html.div {
     style: styles.sheetLayerStyle (),
-    children:
-      html.section {
-        style: styles.historySheetStyle (),
-        children: [
-          html.header {
-            style: styles.sheetHeaderStyle (),
-            children: [
-              html.h2 {
-                style: styles.sheetTitleStyle (),
-                children: "History",
-              },
-              html.button {
-                buttonType: "button",
-                onClick: send CloseOverlay,
-                style: styles.closeButtonStyle (),
-                children: "×",
-              },
-            ],
-          },
-          historyItems entries send,
-        ],
-      },
+    children: historyPanel entries send,
   }
