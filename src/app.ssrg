@@ -2,6 +2,7 @@ import * as html from "std/web/html"
 import * as signals from "std/signal"
 import { MutableSignal, Signal } from "std/signal"
 import * as calculator from "./calculator/model"
+import * as format from "./calculator/format"
 import * as components from "./ui/components"
 import * as keypads from "./ui/keypads"
 import * as overlays from "./ui/overlays"
@@ -28,6 +29,12 @@ fn angleLabel unit: calculator.AngleUnit -> String =
   match unit {
     calculator.Radians -> "Rad"
     calculator.Degrees -> "Deg"
+  }
+
+fn formattedDisplay display: calculator.Display -> String =
+  match display {
+    calculator.Entry _ -> format.displayEntry (calculator.displayText display)
+    calculator.Value value -> format.displayFloat value
   }
 
 fn basicActions state: MutableSignal<calculator.CalculatorState>
@@ -101,8 +108,8 @@ fn historyViewItem state: MutableSignal<calculator.CalculatorState>
   -> item: calculator.HistoryEntry
   -> overlays.HistoryViewItem =
   {
-    expression: item.expression,
-    result: item.result,
+    expression: format.expression item.expression,
+    result: format.displayFloat item.value,
     action: dispatch state (calculator.RecallHistory item.value),
   }
 
@@ -143,7 +150,10 @@ fn render state: MutableSignal<calculator.CalculatorState>
   let openHistory: Task<Unit> = dispatch state calculator.OpenHistory
   let openModeMenu: Task<Unit> = dispatch state calculator.OpenModeMenu
   let toolbarView: html.Html<Task<Unit>> = components.toolbar openHistory openModeMenu
-  let displayView: html.Html<Task<Unit>> = components.display current.caption (calculator.displayText current.display) scientific
+  let displayValue: String = formattedDisplay current.display
+  let displayWidth: Int = format.width displayValue
+  let displayCaption: String = format.expression current.caption
+  let displayView: html.Html<Task<Unit>> = components.display displayCaption displayValue displayWidth scientific
   let scientificView: html.Html<Task<Unit>> = scientificArea state current
   let basicView: html.Html<Task<Unit>> = keypads.basicKeypad scientific (basicActions state)
   let currentOverlay: html.Html<Task<Unit>> = overlayView state current
