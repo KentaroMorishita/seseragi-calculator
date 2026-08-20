@@ -205,6 +205,41 @@ fn resetCalculation state: CalculatorState -> CalculatorState =
     pending: NoPendingOperator,
   }
 
+fn hasPending state: CalculatorState -> Bool =
+  match state.pending {
+    NoPendingOperator -> False
+    PendingOperator _ -> True
+  }
+
+pub fn canClearEntry state: CalculatorState -> Bool =
+  match state.phase {
+    AwaitingOperand -> False
+    ShowingResult -> False
+    Editing ->
+      if displayText state.display == "0" then
+        hasPending state
+      else
+        True
+  }
+
+fn clearEntry state: CalculatorState -> CalculatorState =
+  match state.pending {
+    NoPendingOperator -> CalculatorState {
+      ...state,
+      phase: Editing,
+      display: Entry ["0"],
+      caption: "",
+    }
+    PendingOperator _ -> CalculatorState {
+      ...state,
+      phase: Editing,
+      display: Entry ["0"],
+    }
+  }
+
+fn clear state: CalculatorState -> CalculatorState =
+  if canClearEntry state then clearEntry state else resetCalculation state
+
 fn remember expression: String
   -> result: Float
   -> state: CalculatorState
@@ -465,7 +500,7 @@ pub fn update action: CalculatorAction
     Digit digit -> inputDigit digit state
     DecimalPoint -> inputDecimal state
     Backspace -> deleteDigit state
-    Clear -> resetCalculation state
+    Clear -> clear state
     ToggleSign -> toggleSign state
     Percent -> percent state
     SelectBinary operator -> selectBinary operator state
