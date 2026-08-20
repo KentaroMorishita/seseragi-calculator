@@ -1,9 +1,14 @@
 import * as arrays from "std/array"
 import * as html from "std/web/html"
 import {
+  Basic,
   CalculatorAction,
   CalculatorMode,
+  CloseOverlay,
   HistoryEntry,
+  RecallHistory,
+  Scientific,
+  SelectMode,
 } from "../calculator/model"
 import * as styles from "./styles"
 
@@ -77,7 +82,7 @@ fn historyItems entries: Array<HistoryEntry>
     }
   else
     html.div {
-      children: map (historyItem send) (arrays.take 8 entries),
+      children: [historyItem send item | item <- arrays.take 8 entries],
     }
 
 pub fn historySheet entries: Array<HistoryEntry>
