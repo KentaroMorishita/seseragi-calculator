@@ -3,6 +3,7 @@ import * as floats from "std/float"
 import * as entry from "./entry"
 import * as math from "./math"
 import {
+  AccumulatorState,
   AngleUnit,
   BinaryOperator,
   CalculatorAction,
@@ -11,7 +12,12 @@ import {
   Display,
   HistoryEntry,
   InputPhase,
+  NoAccumulator,
+  NoPendingOperator,
   Overlay,
+  PendingOperator,
+  PendingState,
+  StoredAccumulator,
   UnaryOperator,
 } from "./model"
 
@@ -22,8 +28,8 @@ fn resetCalculation state: CalculatorState -> CalculatorState =
     phase: Editing,
     display: Entry [],
     caption: "",
-    accumulator: Nothing,
-    pending: Nothing,
+    accumulator: NoAccumulator,
+    pending: NoPendingOperator,
   }
 
 fn remember expression: String
@@ -62,8 +68,8 @@ fn inputDigit digit: Int -> state: CalculatorState -> CalculatorState =
         phase: Editing,
         display: entry.startDigit digit,
         caption: "",
-        accumulator: Nothing,
-        pending: Nothing,
+        accumulator: NoAccumulator,
+        pending: NoPendingOperator,
       }
   }
 
@@ -86,8 +92,8 @@ fn inputDecimal state: CalculatorState -> CalculatorState =
         phase: Editing,
         display: entry.startDecimal (),
         caption: "",
-        accumulator: Nothing,
-        pending: Nothing,
+        accumulator: NoAccumulator,
+        pending: NoPendingOperator,
       }
   }
 
@@ -134,8 +140,8 @@ fn startBinary operator: BinaryOperator
   CalculatorState {
     ...state,
     phase: AwaitingOperand,
-    accumulator: Just current,
-    pending: Just operator,
+    accumulator: StoredAccumulator current,
+    pending: PendingOperator operator,
     caption: `${entry.displayText state.display} ${math.binarySymbol operator}`,
   }
 }
@@ -151,8 +157,8 @@ fn chainBinary operator: BinaryOperator
     ...state,
     phase: AwaitingOperand,
     display: Value result,
-    accumulator: Just result,
-    pending: Just operator,
+    accumulator: StoredAccumulator result,
+    pending: PendingOperator operator,
     caption: `${floats.format result} ${math.binarySymbol operator}`,
   }
 }
@@ -161,16 +167,16 @@ fn selectBinary operator: BinaryOperator
   -> state: CalculatorState
   -> CalculatorState =
   match state.pending {
-    Nothing -> startBinary operator state
-    Just previous ->
+    NoPendingOperator -> startBinary operator state
+    PendingOperator previous ->
       match state.accumulator {
-        Nothing -> startBinary operator state
-        Just left ->
+        NoAccumulator -> startBinary operator state
+        StoredAccumulator left ->
           match state.phase {
             AwaitingOperand ->
               CalculatorState {
                 ...state,
-                pending: Just operator,
+                pending: PendingOperator operator,
                 caption: `${entry.displayText state.display} ${math.binarySymbol operator}`,
               }
             Editing -> chainBinary operator previous left state
@@ -185,11 +191,11 @@ fn equals state: CalculatorState -> CalculatorState =
     ShowingResult -> state
     Editing ->
       match state.pending {
-        Nothing -> state
-        Just operator ->
+        NoPendingOperator -> state
+        PendingOperator operator ->
           match state.accumulator {
-            Nothing -> state
-            Just left -> {
+            NoAccumulator -> state
+            StoredAccumulator left -> {
               let right: Float = entry.displayValue state.display
               let result: Float = math.evaluateBinary operator left right
               let expression: String =
@@ -200,8 +206,8 @@ fn equals state: CalculatorState -> CalculatorState =
                   phase: ShowingResult,
                   display: Value result,
                   caption: expression,
-                  accumulator: Nothing,
-                  pending: Nothing,
+                  accumulator: NoAccumulator,
+                  pending: NoPendingOperator,
                 })
             }
           }
@@ -230,22 +236,22 @@ fn applyUnary operator: UnaryOperator
   let result: Float = math.evaluateUnary state.angleUnit operator operand
   let expression: String = math.unaryExpression operator operandText
   match state.pending {
-    Just _ ->
+    PendingOperator _ ->
       CalculatorState {
         ...state,
         phase: Editing,
         display: Value result,
         caption: `${state.caption} ${expression}`,
       }
-    Nothing ->
+    NoPendingOperator ->
       remember expression result
         (CalculatorState {
           ...state,
           phase: ShowingResult,
           display: Value result,
           caption: expression,
-          accumulator: Nothing,
-          pending: Nothing,
+          accumulator: NoAccumulator,
+          pending: NoPendingOperator,
         })
   }
 }
@@ -267,8 +273,8 @@ fn recall value: Float -> state: CalculatorState -> CalculatorState =
     phase: ShowingResult,
     display: Value value,
     caption: "",
-    accumulator: Nothing,
-    pending: Nothing,
+    accumulator: NoAccumulator,
+    pending: NoPendingOperator,
   }
 
 pub fn update action: CalculatorAction
