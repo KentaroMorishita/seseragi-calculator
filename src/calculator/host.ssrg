@@ -1,0 +1,30 @@
+pub foreign "typescript" from "../../host/math.mjs" {
+  pure fn floatAdd left: Float -> right: Float -> Float = "add"
+  pure fn floatSubtract left: Float -> right: Float -> Float = "subtract"
+  pure fn floatMultiply left: Float -> right: Float -> Float = "multiply"
+  pure fn floatDivide left: Float -> right: Float -> Float = "divide"
+  pure fn floatPower base: Float -> exponent: Float -> Float = "power"
+
+  pure fn square value: Float -> Float
+  pure fn cube value: Float -> Float
+  pure fn reciprocal value: Float -> Float
+  pure fn squareRoot value: Float -> Float
+  pure fn cubeRoot value: Float -> Float
+  pure fn exponential value: Float -> Float
+  pure fn tenPower value: Float -> Float
+  pure fn naturalLog value: Float -> Float
+  pure fn log10 value: Float -> Float
+  pure fn factorial value: Float -> Float
+
+  pure fn sineRadians value: Float -> Float
+  pure fn cosineRadians value: Float -> Float
+  pure fn tangentRadians value: Float -> Float
+  pure fn sineDegrees value: Float -> Float
+  pure fn cosineDegrees value: Float -> Float
+  pure fn tangentDegrees value: Float -> Float
+  pure fn sinh value: Float -> Float
+  pure fn cosh value: Float -> Float
+  pure fn tanh value: Float -> Float
+  pure fn euler unit: Unit -> Float
+  pure fn pi unit: Unit -> Float
+}
