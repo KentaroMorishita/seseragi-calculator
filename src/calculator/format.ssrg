@@ -8,6 +8,9 @@ import * as texts from "std/text"
 fn isDigitCode code: Int -> Bool =
   code >= 48 && code <= 57
 
+fn isNumberCode code: Int -> Bool =
+  isDigitCode code || code == 43 || code == 45 || code == 46 || code == 101
+
 fn ascii code: Int -> String =
   match code {
     43 -> "+"
@@ -96,11 +99,63 @@ fn floatRaw value: Float -> String =
         floats.format value
   }
 
+fn utf8Width code: Int -> Int =
+  if code <= 127 then 1
+  else if code <= 223 then 2
+  else if code <= 239 then 3
+  else 4
+
+fn decodeSlice raw: bytes.Bytes -> start: Int -> end: Int -> String =
+  match bytes.slice start end raw {
+    Left _ -> ""
+    Right chunk -> texts.decodeUtf8Lossy chunk
+  }
+
+fn numberEnd codes: Array<Int> -> index: Int -> Int =
+  if index >= arrays.length codes then
+    index
+  else
+    match arrays.get index codes {
+      Nothing -> index
+      Just code ->
+        if isNumberCode code then numberEnd codes (index + 1) else index
+    }
+
+fn expressionAt raw: bytes.Bytes -> codes: Array<Int> -> index: Int -> String =
+  if index >= arrays.length codes then
+    ""
+  else
+    match arrays.get index codes {
+      Nothing -> ""
+      Just code ->
+        if isDigitCode code || code == 45 then {
+          let endIndex: Int = numberEnd codes index
+          let token: String = decodeSlice raw index endIndex
+          let formatted: String =
+            match floats.parse token {
+              Left _ -> token
+              Right value -> displayFloat value
+            }
+          formatted + expressionAt raw codes endIndex
+        }
+        else {
+          let widthValue: Int = utf8Width code
+          let endIndex: Int = index + widthValue
+          decodeSlice raw index endIndex + expressionAt raw codes endIndex
+        }
+    }
+
 pub fn displayFloat value: Float -> String =
   group (floatRaw value)
 
 pub fn displayEntry value: String -> String =
   group value
+
+pub fn expression value: String -> String = {
+  let raw: bytes.Bytes = texts.encodeUtf8 value
+  let codes: Array<Int> = bytes.toInts raw
+  expressionAt raw codes 0
+}
 
 pub fn width value: String -> Int =
   bytes.length (texts.encodeUtf8 value)
