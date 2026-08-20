@@ -1,30 +1,84 @@
-pub foreign "typescript" from "../../host/math.mjs" {
-  pure fn floatAdd left: Float -> right: Float -> Float = "add"
-  pure fn floatSubtract left: Float -> right: Float -> Float = "subtract"
-  pure fn floatMultiply left: Float -> right: Float -> Float = "multiply"
-  pure fn floatDivide left: Float -> right: Float -> Float = "divide"
-  pure fn floatPower base: Float -> exponent: Float -> Float = "power"
+foreign "typescript" from "../../host/math.mjs" {
+  pure fn rawAdd left: Float -> right: Float -> Float = "add"
+  pure fn rawSubtract left: Float -> right: Float -> Float = "subtract"
+  pure fn rawMultiply left: Float -> right: Float -> Float = "multiply"
+  pure fn rawDivide left: Float -> right: Float -> Float = "divide"
+  pure fn rawPower base: Float -> exponent: Float -> Float = "power"
 
-  pure fn square value: Float -> Float
-  pure fn cube value: Float -> Float
-  pure fn reciprocal value: Float -> Float
-  pure fn squareRoot value: Float -> Float
-  pure fn cubeRoot value: Float -> Float
-  pure fn exponential value: Float -> Float
-  pure fn tenPower value: Float -> Float
-  pure fn naturalLog value: Float -> Float
-  pure fn log10 value: Float -> Float
-  pure fn factorial value: Float -> Float
+  pure fn rawSquare value: Float -> Float = "square"
+  pure fn rawCube value: Float -> Float = "cube"
+  pure fn rawReciprocal value: Float -> Float = "reciprocal"
+  pure fn rawSquareRoot value: Float -> Float = "squareRoot"
+  pure fn rawCubeRoot value: Float -> Float = "cubeRoot"
+  pure fn rawExponential value: Float -> Float = "exponential"
+  pure fn rawTenPower value: Float -> Float = "tenPower"
+  pure fn rawNaturalLog value: Float -> Float = "naturalLog"
+  pure fn rawLog10 value: Float -> Float = "log10"
+  pure fn rawFactorial value: Float -> Float = "factorial"
 
-  pure fn sineRadians value: Float -> Float
-  pure fn cosineRadians value: Float -> Float
-  pure fn tangentRadians value: Float -> Float
-  pure fn sineDegrees value: Float -> Float
-  pure fn cosineDegrees value: Float -> Float
-  pure fn tangentDegrees value: Float -> Float
-  pure fn sinh value: Float -> Float
-  pure fn cosh value: Float -> Float
-  pure fn tanh value: Float -> Float
-  pure fn euler unit: Unit -> Float
-  pure fn pi unit: Unit -> Float
+  pure fn rawSineRadians value: Float -> Float = "sineRadians"
+  pure fn rawCosineRadians value: Float -> Float = "cosineRadians"
+  pure fn rawTangentRadians value: Float -> Float = "tangentRadians"
+  pure fn rawSineDegrees value: Float -> Float = "sineDegrees"
+  pure fn rawCosineDegrees value: Float -> Float = "cosineDegrees"
+  pure fn rawTangentDegrees value: Float -> Float = "tangentDegrees"
+  pure fn rawSinh value: Float -> Float = "sinh"
+  pure fn rawCosh value: Float -> Float = "cosh"
+  pure fn rawTanh value: Float -> Float = "tanh"
+  pure fn rawEuler unit: Unit -> Float = "euler"
+  pure fn rawPi unit: Unit -> Float = "pi"
 }
+
+let addFn: Float -> Float -> Float = rawAdd
+let subtractFn: Float -> Float -> Float = rawSubtract
+let multiplyFn: Float -> Float -> Float = rawMultiply
+let divideFn: Float -> Float -> Float = rawDivide
+let powerFn: Float -> Float -> Float = rawPower
+let squareFn: Float -> Float = rawSquare
+let cubeFn: Float -> Float = rawCube
+let reciprocalFn: Float -> Float = rawReciprocal
+let squareRootFn: Float -> Float = rawSquareRoot
+let cubeRootFn: Float -> Float = rawCubeRoot
+let exponentialFn: Float -> Float = rawExponential
+let tenPowerFn: Float -> Float = rawTenPower
+let naturalLogFn: Float -> Float = rawNaturalLog
+let log10Fn: Float -> Float = rawLog10
+let factorialFn: Float -> Float = rawFactorial
+let sineRadiansFn: Float -> Float = rawSineRadians
+let cosineRadiansFn: Float -> Float = rawCosineRadians
+let tangentRadiansFn: Float -> Float = rawTangentRadians
+let sineDegreesFn: Float -> Float = rawSineDegrees
+let cosineDegreesFn: Float -> Float = rawCosineDegrees
+let tangentDegreesFn: Float -> Float = rawTangentDegrees
+let sinhFn: Float -> Float = rawSinh
+let coshFn: Float -> Float = rawCosh
+let tanhFn: Float -> Float = rawTanh
+let eulerFn: Unit -> Float = rawEuler
+let piFn: Unit -> Float = rawPi
+
+pub fn floatAdd left: Float -> right: Float -> Float = addFn left right
+pub fn floatSubtract left: Float -> right: Float -> Float = subtractFn left right
+pub fn floatMultiply left: Float -> right: Float -> Float = multiplyFn left right
+pub fn floatDivide left: Float -> right: Float -> Float = divideFn left right
+pub fn floatPower base: Float -> exponent: Float -> Float = powerFn base exponent
+pub fn square value: Float -> Float = squareFn value
+pub fn cube value: Float -> Float = cubeFn value
+pub fn reciprocal value: Float -> Float = reciprocalFn value
+pub fn squareRoot value: Float -> Float = squareRootFn value
+pub fn cubeRoot value: Float -> Float = cubeRootFn value
+pub fn exponential value: Float -> Float = exponentialFn value
+pub fn tenPower value: Float -> Float = tenPowerFn value
+pub fn naturalLog value: Float -> Float = naturalLogFn value
+pub fn log10 value: Float -> Float = log10Fn value
+pub fn factorial value: Float -> Float = factorialFn value
+pub fn sineRadians value: Float -> Float = sineRadiansFn value
+pub fn cosineRadians value: Float -> Float = cosineRadiansFn value
+pub fn tangentRadians value: Float -> Float = tangentRadiansFn value
+pub fn sineDegrees value: Float -> Float = sineDegreesFn value
+pub fn cosineDegrees value: Float -> Float = cosineDegreesFn value
+pub fn tangentDegrees value: Float -> Float = tangentDegreesFn value
+pub fn sinh value: Float -> Float = sinhFn value
+pub fn cosh value: Float -> Float = coshFn value
+pub fn tanh value: Float -> Float = tanhFn value
+pub fn euler unit: Unit -> Float = eulerFn unit
+pub fn pi unit: Unit -> Float = piFn unit
