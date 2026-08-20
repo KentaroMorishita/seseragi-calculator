@@ -1,13 +1,53 @@
 import * as html from "std/web/html"
 import {
+  Add,
   AngleUnit,
+  ApplyUnary,
+  Backspace,
   BinaryOperator,
   CalculatorAction,
+  Clear,
+  Cosine,
+  Cosh,
+  Cube,
+  CubeRoot,
+  DecimalPoint,
+  Degrees,
+  Digit,
+  Divide,
+  Equals,
+  Euler,
+  Exponential,
+  Factorial,
+  Log10,
+  Multiply,
+  NaturalLog,
+  Percent,
+  Pi,
+  Power,
+  Radians,
+  Reciprocal,
+  SelectBinary,
+  Sine,
+  Sinh,
+  Square,
+  SquareRoot,
+  Subtract,
+  Tangent,
+  Tanh,
+  TenPower,
+  ToggleAngleUnit,
+  ToggleSign,
   UnaryOperator,
 } from "../calculator/model"
 import * as components from "./components"
 import * as styles from "./styles"
-import { KeyTone } from "./styles"
+import {
+  KeyTone,
+  NumberKey,
+  OperatorKey,
+  UtilityKey,
+} from "./styles"
 
 fn key label: String
   -> tone: KeyTone
