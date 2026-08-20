@@ -1,5 +1,4 @@
 import * as html from "std/web/html"
-import * as entry from "../calculator/entry"
 import {
   Basic,
   CalculatorAction,
@@ -10,6 +9,7 @@ import {
   NoOverlay,
   Overlay,
   Scientific,
+  displayText,
 } from "../calculator/model"
 import * as components from "./components"
 import * as keypads from "./keypads"
@@ -47,7 +47,7 @@ fn calculator state: CalculatorState
     style: styles.shellStyle (),
     children: [
       components.toolbar send,
-      components.display state.caption (entry.displayText state.display) scientific,
+      components.display state.caption (displayText state.display) scientific,
       scientificArea state send,
       keypads.basicKeypad scientific send,
       overlay state send,
