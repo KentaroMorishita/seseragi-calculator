@@ -1,64 +1,24 @@
 import * as html from "std/web/html"
-import {
-  Basic,
-  CalculatorAction,
-  CalculatorMode,
-  CalculatorState,
-  HistorySheet,
-  ModeMenu,
-  NoOverlay,
-  Overlay,
-  Scientific,
-  displayText,
-} from "../calculator/model"
-import * as components from "./components"
-import * as keypads from "./keypads"
-import * as overlays from "./overlays"
 import * as styles from "./styles"
 
-fn isScientific mode: CalculatorMode -> Bool =
-  match mode {
-    Basic -> False
-    Scientific -> True
-  }
-
-fn scientificArea state: CalculatorState
-  -> send: (CalculatorAction -> Task<Unit>)
+fn calculator toolbar: html.Html<Task<Unit>>
+  -> display: html.Html<Task<Unit>>
+  -> scientificArea: html.Html<Task<Unit>>
+  -> basicKeypad: html.Html<Task<Unit>>
+  -> overlay: html.Html<Task<Unit>>
   -> html.Html<Task<Unit>> =
-  match state.mode {
-    Basic -> html.div { children: "" }
-    Scientific -> keypads.scientificKeypad state.angleUnit send
-  }
-
-fn overlay state: CalculatorState
-  -> send: (CalculatorAction -> Task<Unit>)
-  -> html.Html<Task<Unit>> =
-  match state.overlay {
-    NoOverlay -> html.div { children: "" }
-    ModeMenu -> overlays.modeMenu state.mode send
-    HistorySheet -> overlays.historySheet state.history send
-  }
-
-fn calculator state: CalculatorState
-  -> send: (CalculatorAction -> Task<Unit>)
-  -> html.Html<Task<Unit>> = {
-  let scientific: Bool = isScientific state.mode
   html.div {
     style: styles.shellStyle (),
-    children: [
-      components.toolbar send,
-      components.display state.caption (displayText state.display) scientific,
-      scientificArea state send,
-      keypads.basicKeypad scientific send,
-      overlay state send,
-    ],
+    children: [toolbar, display, scientificArea, basicKeypad, overlay],
   }
-}
 
-pub fn view send: (CalculatorAction -> Task<Unit>)
-  -> state: CalculatorState
+pub fn view toolbar: html.Html<Task<Unit>>
+  -> display: html.Html<Task<Unit>>
+  -> scientificArea: html.Html<Task<Unit>>
+  -> basicKeypad: html.Html<Task<Unit>>
+  -> overlay: html.Html<Task<Unit>>
   -> html.Html<Task<Unit>> =
   html.main {
     style: styles.pageStyle (),
-    children: calculator state send,
+    children: calculator toolbar display scientificArea basicKeypad overlay,
   }
