@@ -12,11 +12,11 @@ fn keyBackground tone: KeyTone -> String =
     OperatorKey -> "#ff9500"
   }
 
-fn keySize compact: Bool -> String =
-  if compact then
-    "clamp(48px, min(13vw, 7.4svh), 56px)"
-  else
-    "clamp(62px, min(18vw, 9.4svh), 82px)"
+fn basicKeySize -> String =
+  "clamp(74px, min(21.5vw, 10.8svh), 88px)"
+
+fn compactKeyHeight -> String =
+  "clamp(46px, 6.2svh, 54px)"
 
 fn displayFontSize scientific: Bool -> valueWidth: Int -> String =
   if scientific then
@@ -60,7 +60,7 @@ pub fn shellStyle -> html.Style =
     maxWidth: "460px",
     minHeight: "0",
     overflow: "hidden",
-    padding: "14px 16px 16px",
+    padding: "12px 16px 8px",
     position: "relative",
     width: "100%",
   }
@@ -102,7 +102,7 @@ pub fn displayAreaStyle scientific: Bool -> html.Style =
     justifyContent: "flex-end",
     minHeight: "0",
     overflow: "hidden",
-    paddingBottom: if scientific then "8px" else "16px",
+    paddingBottom: if scientific then "8px" else "14px",
     paddingLeft: "4px",
     paddingRight: "4px",
   }
@@ -140,6 +140,7 @@ pub fn basicGridStyle scientific: Bool -> html.Style =
     flexShrink: "0",
     gap: if scientific then "8px" else "10px",
     gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
+    marginBottom: if scientific then "calc(env(safe-area-inset-bottom) + 2px)" else "calc(env(safe-area-inset-bottom) + 4px)",
   }
 
 pub fn scientificGridStyle -> html.Style =
@@ -148,7 +149,7 @@ pub fn scientificGridStyle -> html.Style =
     flexShrink: "0",
     gap: "7px",
     gridTemplateColumns: "repeat(5, minmax(0, 1fr))",
-    marginBottom: "10px",
+    marginBottom: "8px",
   }
 
 pub fn keyButtonStyle tone: KeyTone -> compact: Bool -> html.Style =
@@ -160,15 +161,15 @@ pub fn keyButtonStyle tone: KeyTone -> compact: Bool -> html.Style =
     color: "#ffffff",
     display: "flex",
     fontFamily: "inherit",
-    fontSize: if compact then "20px" else "clamp(30px, 8vw, 36px)",
+    fontSize: if compact then "20px" else "clamp(32px, 8.5vw, 38px)",
     fontWeight: "400",
-    height: keySize compact,
+    height: if compact then compactKeyHeight () else basicKeySize (),
     justifyContent: "center",
     lineHeight: "1",
     marginLeft: "auto",
     marginRight: "auto",
     padding: "0",
-    width: keySize compact,
+    width: if compact then "100%" else basicKeySize (),
   }
 
 pub fn scientificButtonStyle -> html.Style =
@@ -176,12 +177,12 @@ pub fn scientificButtonStyle -> html.Style =
     alignItems: "center",
     backgroundColor: "#1c1c1e",
     border: "1px solid #303033",
-    borderRadius: "20px",
+    borderRadius: "999px",
     color: "#f5f5f7",
     display: "flex",
     fontFamily: "inherit",
     fontSize: "16px",
-    height: "clamp(38px, 6svh, 46px)",
+    height: "clamp(42px, 5.8svh, 48px)",
     justifyContent: "center",
     lineHeight: "1",
     padding: "0",
