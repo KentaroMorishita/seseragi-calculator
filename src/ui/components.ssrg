@@ -3,12 +3,13 @@ import * as styles from "./styles"
 import { KeyTone } from "./styles"
 
 pub fn iconButton label: String
+  -> history: Bool
   -> action: Task<Unit>
   -> html.Html<Task<Unit>> =
   html.button {
     buttonType: "button",
     onClick: action,
-    style: styles.iconButtonStyle (),
+    style: styles.iconButtonStyle history,
     children: label,
   }
 
@@ -18,8 +19,8 @@ pub fn toolbar openHistory: Task<Unit>
   html.header {
     style: styles.toolbarStyle (),
     children: [
-      iconButton "◷" openHistory,
-      iconButton "ƒx" openModeMenu,
+      iconButton "◷" True openHistory,
+      iconButton "ƒx" False openModeMenu,
     ],
   }
 
