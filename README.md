@@ -21,15 +21,15 @@ seseragi build .
 ```text
 src/
 ├─ main.ssrg              # DOM runtime boundary
-├─ app.ssrg               # Signal ownership and dispatch
+├─ app.ssrg               # Signal ownership, action dispatch, and screen wiring
 ├─ calculator/
-│  ├─ model.ssrg          # Domain types and application state
-│  ├─ entry.ssrg          # Numeric entry parsing / formatting
-│  ├─ math.ssrg           # Pure calculator operations
-│  └─ update.ssrg         # Pure state transition
+│  ├─ model.ssrg          # Domain types, calculator state, actions, and pure update
+│  ├─ entry.ssrg          # Numeric entry editing and parsing
+│  ├─ format.ssrg         # Display, expression, and history formatting
+│  └─ math.ssrg           # Pure arithmetic and scientific operations
 └─ ui/
-   ├─ styles.ssrg         # Visual tokens and styles
-   ├─ components.ssrg     # Shared calculator UI pieces
+   ├─ styles.ssrg         # Visual tokens, responsive sizing, and styles
+   ├─ components.ssrg     # Shared toolbar, display, and button components
    ├─ keypads.ssrg        # Basic and scientific keypads
    ├─ overlays.ssrg       # Mode menu and history sheet
    └─ view.ssrg           # Screen composition
