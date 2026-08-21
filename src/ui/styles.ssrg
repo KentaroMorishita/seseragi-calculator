@@ -9,7 +9,7 @@ fn keyBackground tone: KeyTone -> String =
   match tone {
     NumberKey -> "#333333"
     UtilityKey -> "#6b6b6d"
-    OperatorKey -> "#ff9500"
+    OperatorKey -> "#7C3AED"
   }
 
 fn basicKeySize -> String =
