@@ -14,9 +14,9 @@ fn keyBackground tone: KeyTone -> String =
 
 fn keySize compact: Bool -> String =
   if compact then
-    "clamp(48px, min(13vw, 7.4dvh), 56px)"
+    "clamp(48px, min(13vw, 7.4svh), 56px)"
   else
-    "clamp(62px, min(18vw, 9.4dvh), 82px)"
+    "clamp(62px, min(18vw, 9.4svh), 82px)"
 
 fn displayFontSize scientific: Bool -> valueWidth: Int -> String =
   if scientific then
@@ -36,13 +36,15 @@ fn displayFontSize scientific: Bool -> valueWidth: Int -> String =
 pub fn pageStyle -> html.Style =
   html.style {
     backgroundColor: "#000000",
+    bottom: "0",
     color: "#ffffff",
     fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif",
-    height: "100dvh",
+    left: "0",
     margin: "0",
-    minHeight: "0",
     overflow: "hidden",
-    width: "100%",
+    position: "fixed",
+    right: "0",
+    top: "0",
   }
 
 pub fn shellStyle -> html.Style =
@@ -51,9 +53,10 @@ pub fn shellStyle -> html.Style =
     boxSizing: "border-box",
     display: "flex",
     flexDirection: "column",
-    height: "100dvh",
+    height: "100%",
     marginLeft: "auto",
     marginRight: "auto",
+    maxHeight: "100%",
     maxWidth: "460px",
     minHeight: "0",
     overflow: "hidden",
@@ -178,7 +181,7 @@ pub fn scientificButtonStyle -> html.Style =
     display: "flex",
     fontFamily: "inherit",
     fontSize: "16px",
-    height: "clamp(38px, 6dvh, 46px)",
+    height: "clamp(38px, 6svh, 46px)",
     justifyContent: "center",
     lineHeight: "1",
     padding: "0",
