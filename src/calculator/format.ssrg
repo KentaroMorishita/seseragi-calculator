@@ -49,9 +49,7 @@ fn countIntegerDigitsAt codes: Array<Int>
     match arrays.get index codes {
       Nothing -> count
       Just code ->
-        if code == 46 then
-          count
-        else if code == 101 then
+        if code == 46 || code == 101 then
           count
         else if isDigitCode code then
           countIntegerDigitsAt codes (index + 1) (count + 1)
@@ -69,12 +67,7 @@ fn renderTail codes: Array<Int> -> index: Int -> String =
     }
 
 fn separatorFor digitIndex: Int -> remaining: Int -> String =
-  if digitIndex <= 0 then
-    ""
-  else if remaining % 3 == 0 then
-    ","
-  else
-    ""
+  if digitIndex > 0 && remaining % 3 == 0 then "," else ""
 
 fn renderGroupedAt codes: Array<Int>
   -> index: Int
@@ -107,14 +100,7 @@ fn groupFinite raw: String -> String = {
 }
 
 fn group raw: String -> String =
-  if raw == "NaN" then
-    raw
-  else if raw == "Infinity" then
-    raw
-  else if raw == "-Infinity" then
-    raw
-  else
-    groupFinite raw
+  if raw == "NaN" || raw == "Infinity" || raw == "-Infinity" then raw else groupFinite raw
 
 fn magnitude value: Float -> Float =
   match floats.totalCompare value 0.0 {

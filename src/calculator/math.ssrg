@@ -11,7 +11,7 @@ pub fn add left: Float -> right: Float -> Float = left + right
 pub fn subtract left: Float -> right: Float -> Float = left - right
 pub fn multiply left: Float -> right: Float -> Float = left * right
 pub fn divide left: Float -> right: Float -> Float = left / right
-pub fn power left: Float -> right: Float -> Float = floats.power right left
+pub fn power left: Float -> right: Float -> Float = left ** right
 
 fn normalizeRadians value: Float -> Float = {
   let turns: Float = floats.roundIntegral numbers.HalfEven (value / tauValue)
@@ -109,9 +109,7 @@ pub fn exponential value: Float -> Float = floats.power value eValue
 pub fn tenPower value: Float -> Float = floats.power value 10.0
 
 fn lnCore value: Float -> Float = {
-  let numerator: Float = value - 1.0
-  let denominator: Float = value + 1.0
-  let y: Float = numerator / denominator
+  let y: Float = (value - 1.0) / (value + 1.0)
   let y2: Float = y * y
   let y3: Float = y * y2
   let y5: Float = y3 * y2
@@ -170,15 +168,13 @@ pub fn factorial value: Float -> Float =
 pub fn sinh value: Float -> Float = {
   let positive: Float = exponential value
   let negative: Float = exponential (0.0 - value)
-  let difference: Float = positive - negative
-  difference / 2.0
+  (positive - negative) / 2.0
 }
 
 pub fn cosh value: Float -> Float = {
   let positive: Float = exponential value
   let negative: Float = exponential (0.0 - value)
-  let total: Float = positive + negative
-  total / 2.0
+  (positive + negative) / 2.0
 }
 
 pub fn tanh value: Float -> Float = sinh value / cosh value

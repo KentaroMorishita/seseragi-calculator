@@ -19,7 +19,7 @@ jobs:
       - uses: oven-sh/setup-bun@v2
 
       - name: Install Seseragi CLI
-        run: cargo install --git https://github.com/KentaroMorishita/seseragi --branch fix/float-arithmetic-operators --locked seseragi-cli
+        run: cargo install --git https://github.com/KentaroMorishita/seseragi --locked seseragi-cli
 
       - name: Build web app
         run: |
