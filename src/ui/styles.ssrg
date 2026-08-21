@@ -12,6 +12,12 @@ fn keyBackground tone: KeyTone -> String =
     OperatorKey -> "#ff9500"
   }
 
+fn keySize compact: Bool -> String =
+  if compact then
+    "clamp(48px, min(13vw, 7.4dvh), 56px)"
+  else
+    "clamp(62px, min(18vw, 9.4dvh), 82px)"
+
 fn displayFontSize scientific: Bool -> valueWidth: Int -> String =
   if scientific then
     if valueWidth <= 6 then "64px"
@@ -32,33 +38,40 @@ pub fn pageStyle -> html.Style =
     backgroundColor: "#000000",
     color: "#ffffff",
     fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif",
+    height: "100dvh",
     margin: "0",
-    minHeight: "100dvh",
-    overflowX: "hidden",
+    minHeight: "0",
+    overflow: "hidden",
+    width: "100%",
   }
 
 pub fn shellStyle -> html.Style =
   html.style {
     backgroundColor: "#000000",
+    boxSizing: "border-box",
     display: "flex",
     flexDirection: "column",
+    height: "100dvh",
     marginLeft: "auto",
     marginRight: "auto",
     maxWidth: "460px",
-    minHeight: "100dvh",
-    padding: "18px 16px 24px",
+    minHeight: "0",
+    overflow: "hidden",
+    padding: "14px 16px 16px",
     position: "relative",
+    width: "100%",
   }
 
 pub fn toolbarStyle -> html.Style =
   html.style {
     alignItems: "center",
     display: "flex",
+    flexShrink: "0",
     justifyContent: "space-between",
-    minHeight: "58px",
+    minHeight: "54px",
   }
 
-pub fn iconButtonStyle -> html.Style =
+pub fn iconButtonStyle history: Bool -> html.Style =
   html.style {
     alignItems: "center",
     backgroundColor: "#1c1c1e",
@@ -70,7 +83,10 @@ pub fn iconButtonStyle -> html.Style =
     fontSize: "22px",
     height: "48px",
     justifyContent: "center",
+    lineHeight: "1",
     padding: "0",
+    paddingBottom: if history then "2px" else "0",
+    textAlign: "center",
     width: "48px",
   }
 
@@ -79,9 +95,11 @@ pub fn displayAreaStyle scientific: Bool -> html.Style =
     alignItems: "flex-end",
     display: "flex",
     flexDirection: "column",
+    flexGrow: "1",
     justifyContent: "flex-end",
-    minHeight: if scientific then "142px" else "clamp(190px, 32vh, 310px)",
-    paddingBottom: if scientific then "12px" else "22px",
+    minHeight: "0",
+    overflow: "hidden",
+    paddingBottom: if scientific then "8px" else "16px",
     paddingLeft: "4px",
     paddingRight: "4px",
   }
@@ -116,41 +134,53 @@ pub fn valueStyle scientific: Bool -> valueWidth: Int -> html.Style =
 pub fn basicGridStyle scientific: Bool -> html.Style =
   html.style {
     display: "grid",
-    gap: if scientific then "10px" else "12px",
+    flexShrink: "0",
+    gap: if scientific then "8px" else "10px",
     gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
   }
 
 pub fn scientificGridStyle -> html.Style =
   html.style {
     display: "grid",
-    gap: "8px",
+    flexShrink: "0",
+    gap: "7px",
     gridTemplateColumns: "repeat(5, minmax(0, 1fr))",
-    marginBottom: "12px",
+    marginBottom: "10px",
   }
 
 pub fn keyButtonStyle tone: KeyTone -> compact: Bool -> html.Style =
   html.style {
+    alignItems: "center",
     backgroundColor: keyBackground tone,
     border: "0",
     borderRadius: "999px",
     color: "#ffffff",
+    display: "flex",
     fontFamily: "inherit",
-    fontSize: if compact then "20px" else "34px",
+    fontSize: if compact then "20px" else "clamp(30px, 8vw, 36px)",
     fontWeight: "400",
-    height: if compact then "54px" else "clamp(66px, 18vw, 82px)",
+    height: keySize compact,
+    justifyContent: "center",
+    lineHeight: "1",
+    marginLeft: "auto",
+    marginRight: "auto",
     padding: "0",
-    width: "100%",
+    width: keySize compact,
   }
 
 pub fn scientificButtonStyle -> html.Style =
   html.style {
+    alignItems: "center",
     backgroundColor: "#1c1c1e",
     border: "1px solid #303033",
     borderRadius: "20px",
     color: "#f5f5f7",
+    display: "flex",
     fontFamily: "inherit",
     fontSize: "16px",
-    height: "46px",
+    height: "clamp(38px, 6dvh, 46px)",
+    justifyContent: "center",
+    lineHeight: "1",
     padding: "0",
     width: "100%",
   }
